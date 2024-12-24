@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLB Future Predictor - Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .sidebar h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .sidebar a {
+            display: block;
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 6px;
+            text-align: left;
+            cursor: pointer;
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .sidebar a:hover {
+            background-color: #e9ecef;
+        }
+
+        .sidebar a.active {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .guide-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 800px;
+        }
+
+        .guide-section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .guide-section p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .guide-section ul {
+            margin-left: 20px;
+            color: #666;
+        }
+
+        .guide-section li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h1>MLB Future Predictor</h1>
+        <a href="options.html">Predict your MLB future now!</a>
+        <a href="guide.html" class="active">How we work (a guide)</a>
+    </div>
+
+    <div class="main-content">
+        <div class="guide-section">
+            <h2>Technical Implementation Guide</h2>
+            <p>This MLB Future Predictor extension uses a sophisticated analysis system to evaluate player statistics and predict future performance. Here's how it works:</p>
+            <ul>
+                <li><strong>User Interface:</strong> Built with pure HTML, CSS, and JavaScript for maximum compatibility and ease of maintenance.</li>
+                <li><strong>Backend Processing:</strong> Utilizes a Flask server running locally on port 5000 to process your statistics.</li>
+                <li><strong>Data Analysis:</strong> Implements advanced statistical analysis to generate accurate predictions based on historical MLB data.</li>
+                <li><strong>Security:</strong> All data is processed locally on your machine, ensuring your information remains private and secure.</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

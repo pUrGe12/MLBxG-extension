@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLB Future Predictor - Options</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .sidebar h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .sidebar a {
+            display: block;
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 6px;
+            text-align: left;
+            cursor: pointer;
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .sidebar a:hover {
+            background-color: #e9ecef;
+        }
+
+        .sidebar a.active {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .prediction-form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 800px;
+        }
+
+        .prediction-form textarea {
+            width: 100%;
+            height: 150px;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+        }
+
+        .prediction-form button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .prediction-form button:hover {
+            background-color: #2980b9;
+        }
+
+        .prediction-result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h1>MLB Future Predictor</h1>
+        <a href="options.html" class="active">Predict your MLB future now!</a>
+        <a href="guide.html">How we work (a guide)</a>
+    </div>
+
+    <div class="main-content">
+        <div class="prediction-form">
+            <h2>Enter Your Stats</h2>
+            <form id="stats-form">
+                <textarea id="stats-input" placeholder="Enter your baseball statistics here..."></textarea>
+                <button type="submit">Get Prediction</button>
+            </form>
+            <div id="prediction-result" class="prediction-result">
+                <h3>Your Prediction</h3>
+                <p id="prediction-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('stats-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const stats = document.getElementById('stats-input').value;
+            const resultDiv = document.getElementById('prediction-result');
+            const predictionText = document.getElementById('prediction-text');
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/user-stat/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ stats })
+                });
+
+                const data = await response.json();
+                predictionText.textContent = data.prediction;
+                resultDiv.style.display = 'block';
+            } catch (error) {
+                predictionText.textContent = 'Error connecting to server. Please try again.';
+                resultDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
