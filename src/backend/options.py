@@ -9,6 +9,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))) # adding the root directory to path
 from prompts import genPrompt
+from prompts import statPrompt
 
 from dotenv import load_dotenv
 from pathlib import Path
@@ -22,7 +23,7 @@ model = genai.GenerativeModel('gemini-pro')
 chat = model.start_chat(history=[])
 
 def GPT_response(user_prompt):
-    prompt = str(genPrompt[0]) + f"""
+    prompt = str(statPrompt[0]) + f"""
                                 This is the user's prompt: {user_prompt}
         """
     
@@ -52,13 +53,12 @@ def GPT_response(user_prompt):
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-@app.route('/process_input', methods=['POST'])
+@app.route('/user-stat/', methods=['POST'])
 def process_input():
     user_input = request.json.get('input')  # Receive input from the panel
     if not user_input:
         return jsonify({"error": "No input provided"}), 400
 
-    # Process the user input (dummy response for now)
     processed_output = GPT_response(user_input)
 
     return jsonify({"response": processed_output})
