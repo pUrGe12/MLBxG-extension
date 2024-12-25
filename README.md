@@ -19,4 +19,8 @@ This is the options page. This page is to help you predict your MLB future and a
 
 ![options page](images/options.png)
 
+## Work
+
+- [ ] Can probably integrate panel.py and options.py into one using different API endpoints
+
 # Installing
