@@ -7,6 +7,10 @@
 
 Developing an extension that can read your screen and give you live data updates and tips on your favourite baseball games! (With permission)
 
+## The workflow
+
+Image goes here
+
 ## The looks
 
 This is the side panel. You can open this in any youtube video (currently works only for youtube).
@@ -22,5 +26,7 @@ This is the options page. This page is to help you predict your MLB future and a
 ## Work
 
 - [ ] Can probably integrate panel.py and options.py into one using different API endpoints
+- [ ] Add comments to code (makes it easier to create the guide as well)
+- [ ] Create the workflow in Canva
 
 # Installing
