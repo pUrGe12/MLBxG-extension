@@ -28,5 +28,7 @@ This is the options page. This page is to help you predict your MLB future and a
 - [ ] Can probably integrate panel.py and options.py into one using different API endpoints
 - [ ] Add comments to code (makes it easier to create the guide as well)
 - [ ] Create the workflow in Canva
+- [ ] Write all the prompts
+
 
 # Installing
