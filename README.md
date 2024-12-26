@@ -9,7 +9,7 @@ Developing an extension that can read your screen and give you live data updates
 
 ## The workflow
 
-Image goes here
+![duxMLB](images/duxMLB_version1.png)
 
 ## The looks
 
