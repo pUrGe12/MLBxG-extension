@@ -64,6 +64,11 @@ def load_models():
     
     return encoder, scaler
 
+
+global encoder, scaler
+encoder, scaler = load_models()             # Load the encoder and the scaler using the above defined function
+
+
 def process_new_hit(new_hit_data, encoder, scaler):
     """
         This function takes in the players stats and generates embeddings using the trained models
@@ -147,29 +152,57 @@ CORS(app)  # Enable CORS for all routes
 @app.route('/user-stat/', methods=['POST'])
 def process_input():
     user_input = request.json.get('input')  # Receive input from the panel
+
+    print(user_input)
+
     if not user_input:
         return jsonify({"error": "No input provided"}), 400
 
-    extractor_dictionary, additional_params = extractor(user_input)
+    try:
+        print('in the try block')
+        extractor_dictionary, additional_params = extractor(user_input)
 
-    '''  
-        extractor output is a dictionary that describes the following of the user
-        1. ExitVelocity
-        2. HitDistance
-        3. LaunchAngle
+        print("unpacked the tuple!")
 
-        We parse the "AdditionalParams" seperately. The idea is to send the extractor_dictionary to the pineconeDB and get top similar hits
+        '''  
+            extractor output is a dictionary that describes the following of the user
+            1. ExitVelocity
+            2. HitDistance
+            3. LaunchAngle
 
-    '''
+            We parse the "AdditionalParams" seperately. The idea is to send the extractor_dictionary to the pineconeDB and get top similar hits
 
-    encoder, scaler = load_models()             # Load the encoder and the scaler using the above defined function
-    embedding = process_new_hit(embedding, top_k = 5)                           # Get top 5 matches
-    found_similar_hits = find_similar_hits(embedding)
-    top_similar_hits = store_similar_hits(found_similar_hits)
+        '''
 
-    processed_output = GPT_response(top_similar_hits, additional_params)
+        embedding = process_new_hit(extractor_dictionary, encoder, scaler)                           
+        
+        print("embeddings generated")
+        
+        # Find the top 5 matches to the user's stats being entered above.
+        found_similar_hits = find_similar_hits(embedding, top_k = 5)
+        top_similar_hits = store_similar_hits(found_similar_hits)               # Storing that to send it to the model for prettifying
 
-    return jsonify({"response": processed_output})
+        print(top_similar_hits)
+
+        processed_output = GPT_response(top_similar_hits, additional_params.get('AdditionalParams'))                    # Both additional params and extractor dict are dictionaries.
+
+        print(processed_output)
+
+        return jsonify({"response": processed_output})
+
+    except Exception as e:
+        incomplete_text = extractor(user_input)
+
+        print('here in exception', e)
+
+        '''
+            Enter this block of code when unpacking the tuple leads to an exception
+            This will only happen when there is only one element being returned by the extractor, that is the incomplete text. 
+
+            We will show the incomplete text directly to the user. 
+        '''
+
+        return jsonify({"response": incomplete_text})
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5001, debug=True)

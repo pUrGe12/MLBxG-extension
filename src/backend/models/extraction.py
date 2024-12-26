@@ -1,6 +1,7 @@
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 import google.generativeai as genai
 
+import re
 import os
 import sys
 
@@ -10,13 +11,24 @@ from backend.prompts import extractionPrompt
 from dotenv import load_dotenv
 from pathlib import Path
 
-load_dotenv(dotenv_path=Path(__file__).parent.parent / '.env')
+load_dotenv(dotenv_path=Path(__file__).parent.parent.parent.parent / '.env')
 
 API_KEY = str(os.getenv("API_KEY")).strip()
 genai.configure(api_key=API_KEY)
 
 model = genai.GenerativeModel('gemini-pro')
 chat = model.start_chat(history=[])
+
+def parse_extractor_dict(data):
+    pattern = r'(\w+),\s([\d\.]+)'
+    matches = re.findall(pattern, data[0])
+    return {key: float(value) for key, value in matches}
+
+def parse_additional_params(data):
+    pattern = r'(\w+),\s"([^"]+)"'
+    matches = re.findall(pattern, data[0])
+    return {key: value for key, value in matches}
+
 
 def extractor(user_prompt):
     prompt = str(extractionPrompt[0]) + f"""
@@ -40,7 +52,17 @@ def extractor(user_prompt):
             if chunk.text:
                 output += str(chunk.text)
 
-        return output
+        if output.split('\n')[0].startswith('&'):
+            extractor_dictionary = re.findall('&&&dict.*&&&', output, re.DOTALL)
+            additional_params = re.findall('@@@addparam.*@@@', output, re.DOTALL)
+
+            final_extractor_dict = parse_extractor_dict(extractor_dictionary)
+            final_additional_params = parse_additional_params(additional_params)
+            
+            return (final_extractor_dict, final_additional_params)
+        else:
+            incomplete_text = re.findall('^^^incomplete.*^^^', output, re.DOTALL)
+            return incomplete_text
 
     except Exception as e:
         print(f"Error generating GPT response in model_json: {e}")
