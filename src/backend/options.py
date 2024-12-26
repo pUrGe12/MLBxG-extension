@@ -143,7 +143,7 @@ def GPT_response(top_similar_hits, additional_params):
         return output
 
     except Exception as e:
-        print(f"Error generating GPT response in model_json: {e}")
+        print(f"Error generating response: {e}")
         return 'Try again'
 
 app = Flask(__name__)
@@ -177,7 +177,7 @@ def process_input():
         embedding = process_new_hit(extractor_dictionary, encoder, scaler)                           
         
         print("embeddings generated")
-        
+
         # Find the top 5 matches to the user's stats being entered above.
         found_similar_hits = find_similar_hits(embedding, top_k = 5)
         top_similar_hits = store_similar_hits(found_similar_hits)               # Storing that to send it to the model for prettifying
@@ -188,11 +188,14 @@ def process_input():
 
         print(processed_output)
 
-        return jsonify({"response": processed_output})
+        return jsonify({
+            "response": processed_output
+            })
 
     except Exception as e:
         incomplete_text = extractor(user_input)
 
+        print(incomplete_text)
         print('here in exception', e)
 
         '''
@@ -202,7 +205,9 @@ def process_input():
             We will show the incomplete text directly to the user. 
         '''
 
-        return jsonify({"response": incomplete_text})
+        return jsonify({
+            "response": incomplete_text
+            })
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5001, debug=True)

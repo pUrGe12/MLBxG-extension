@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MLB Future Predictor - Options</title>
+    <script src="./lib/marked.min.js"></script>
     <style>
-        * {
+                * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -107,6 +108,7 @@
         .prediction-form button:active {
             transform: translateY(0);
         }
+        
         .prediction-result {
             margin-top: 25px;
             padding: 20px;
@@ -120,10 +122,55 @@
             margin-bottom: 12px;
             font-size: 1.4em;
         }
+        /* Add styles for markdown content */
         #prediction-text {
             color: #34495e;
             line-height: 1.6;
             font-size: 15px;
+        }
+        /* Style markdown elements */
+        #prediction-text h1, #prediction-text h2, #prediction-text h3 {
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            color: #2c3e50;
+        }
+        #prediction-text p {
+            margin-bottom: 1em;
+        }
+        #prediction-text ul, #prediction-text ol {
+            margin-bottom: 1em;
+            padding-left: 2em;
+        }
+        #prediction-text code {
+            background: #f5f7fa;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        #prediction-text pre {
+            background: #f5f7fa;
+            padding: 1em;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        #prediction-text blockquote {
+            border-left: 4px solid #3498db;
+            margin: 1em 0;
+            padding-left: 1em;
+            color: #5f6368;
+        }
+        #prediction-text table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1em 0;
+        }
+        #prediction-text th, #prediction-text td {
+            border: 1px solid #e0e6ed;
+            padding: 8px;
+            text-align: left;
+        }
+        #prediction-text th {
+            background: #f5f7fa;
         }
     </style>
 </head>
@@ -137,10 +184,7 @@
         <div class="prediction-form">
             <h2>Enter Your Stats</h2>
             <form id="stats-form">
-                <textarea id="stats-input" placeholder="
-
-                Enter your baseball stats and see how you compare to the best!
-
+                <textarea id="stats-input" placeholder="Enter your baseball stats and see how you compare to the best!                
                 "></textarea>
                 <button type="submit">Get Prediction</button>
             </form>
@@ -153,3 +197,5 @@
     <script src="../js/options.js"></script>
 </body>
 </html>
+
+

@@ -21,7 +21,7 @@ genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel('gemini-pro')
 chat = model.start_chat(history=[])
 
-def GPT_response(user_prompt):
+def panel_response(user_prompt):
     prompt = str(genPrompt[0]) + f"""
                                 This is the user's prompt: {user_prompt}
         """
@@ -59,7 +59,7 @@ def process_input():
         return jsonify({"error": "No input provided"}), 400
 
     # Process the user input (dummy response for now)
-    processed_output = GPT_response(user_input)
+    processed_output = panel_response(user_input)
 
     return jsonify({"response": processed_output})
 

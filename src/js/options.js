@@ -5,15 +5,13 @@ document.getElementById('stats-form').addEventListener('submit', async (e) => {
     const predictionResultDiv = document.getElementById('prediction-result');
 
     if (!stats.trim()) {
-        // Show error message immediately
         predictionResultDiv.style.display = 'block';
-        responseDiv.textContent = "Please enter something...";
+        responseDiv.innerHTML = "Please enter something...";
         return;
     }
 
-    // Show "Generating prediction!..." immediately
     predictionResultDiv.style.display = 'block';
-    responseDiv.textContent = "Generating prediction!...";
+    responseDiv.innerHTML = "Generating prediction!...";
 
     try {
         const response = await fetch('http://127.0.0.1:5001/user-stat/', {
@@ -29,9 +27,17 @@ document.getElementById('stats-form').addEventListener('submit', async (e) => {
         }
 
         const data = await response.json();
-        responseDiv.textContent = data.response;
+        
+        // Parse markdown to HTML using marked
+        const htmlContent = marked.parse(data.response, {
+            breaks: true, // Enable line breaks
+            gfm: true,    // Enable GitHub Flavored Markdown
+        });
+        
+        // Set the parsed HTML content
+        responseDiv.innerHTML = htmlContent;
     } catch (error) {
         console.error('Fetch error:', error);
-        responseDiv.textContent = 'Error connecting to server. Please try again.';
+        responseDiv.innerHTML = 'Error connecting to server. Please try again.';
     }
 });

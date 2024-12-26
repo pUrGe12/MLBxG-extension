@@ -26,7 +26,9 @@
   "background": {
     "service_worker": "js/background.js"
   },
+  
   "options_page": "frontend/options.html",
+  
   "content_scripts": [
     {
       "js": ["js/content.js"],
@@ -39,5 +41,13 @@
       "32": "images/icon-32.png",
       "48": "images/icon-48.png"
     }
+  },
+  "web_accessible_resources": [{
+    "resources": ["lib/marked.min.js"],
+    "matches": ["<all_urls>"]
+  }],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   }
+
 }

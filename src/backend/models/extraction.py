@@ -29,6 +29,10 @@ def parse_additional_params(data):
     matches = re.findall(pattern, data[0])
     return {key: value for key, value in matches}
 
+def parse_incomplete_text(data):
+    pattern = r'\^\^\^incomplete\n\t\t(.*?)\n\t\t\^\^\^'
+    match = re.search(pattern, data[0], re.DOTALL)
+    return match.group(1) if match else None
 
 def extractor(user_prompt):
     prompt = str(extractionPrompt[0]) + f"""
@@ -52,7 +56,7 @@ def extractor(user_prompt):
             if chunk.text:
                 output += str(chunk.text)
 
-        if output.split('\n')[0].startswith('&'):
+        if output.split('\n')[0].strip().startswith('&') or '&' in output.strip():
             extractor_dictionary = re.findall('&&&dict.*&&&', output, re.DOTALL)
             additional_params = re.findall('@@@addparam.*@@@', output, re.DOTALL)
 
@@ -61,9 +65,11 @@ def extractor(user_prompt):
             
             return (final_extractor_dict, final_additional_params)
         else:
-            incomplete_text = re.findall('^^^incomplete.*^^^', output, re.DOTALL)
-            return incomplete_text
+
+            incomplete_text = re.findall('\^\^\^incomplete.*\^\^\^', output, re.DOTALL)
+            
+            return parse_incomplete_text(incomplete_text)
 
     except Exception as e:
         print(f"Error generating GPT response in model_json: {e}")
-        return 'Try again'
+        return output
