@@ -26,8 +26,9 @@ This is the options page. This page is to help you predict your MLB future and a
 ## Work
 
 - [ ] Add comments to code (makes it easier to create the guide as well)
-- [ ] Create the workflow in Canva
+- [ ] Create the workflow in Canva (ongoing)
 - [ ] Write all the prompts
+- [ ] Figure out the sending and processing of buffer
 
 Have created seperate ports for the panel and the options page because it will be much easier to manage and make changes in that.
 
