@@ -30,8 +30,10 @@ def parse_additional_params(data):
     return {key: value for key, value in matches}
 
 def parse_incomplete_text(data):
-    pattern = r'\^\^\^incomplete\n\t\t(.*?)\n\t\t\^\^\^'
+    pattern = r'\^\^\^incomplete(.*?)\^\^\^'
+    
     match = re.search(pattern, data[0], re.DOTALL)
+
     return match.group(1) if match else None
 
 def extractor(user_prompt):
@@ -67,6 +69,8 @@ def extractor(user_prompt):
         else:
 
             incomplete_text = re.findall('\^\^\^incomplete.*\^\^\^', output, re.DOTALL)
+            
+            print(incomplete_text)
             
             return parse_incomplete_text(incomplete_text)
 
