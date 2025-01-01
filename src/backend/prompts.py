@@ -75,3 +75,9 @@ duxMLB output:
 		Wishing you the best in your MLB journey!
 		^^^
 ''']
+
+buffer_needed_prompt = ['''
+
+		You are duxMLB. You will be given a prompt...
+
+''']
