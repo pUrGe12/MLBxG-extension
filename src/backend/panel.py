@@ -25,6 +25,28 @@ genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel('gemini-pro')
 chat = model.start_chat(history=[])
 
+def processVideoForStatcastData(video_complete):
+    import cv2
+
+    # the VideoCapture class requires a path or does it also work with in-house videos? Like if I generate a mp4 right here, will it be able to read it?
+    cap = cv2.VideoCapture(video_complete)
+    fgbg = cv2.createBackgroundSubtractorMOG2()
+
+    while(True):
+        ret, frame = cap.read()
+        fgmask = fgbg.apply(frame)
+
+        cv2.imshow('fgmask', fgmask)
+        cv2.imshow('frame', frame)
+
+        k = cv2.waitKey(30) & 0xff
+        if k == 27:
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+
 def check_buffer_needed(user_prompt):
     prompt = str(buffer_needed_prompt[0]) + f"""
                                 This is the user's prompt: {user_prompt}
@@ -107,12 +129,17 @@ def process_input():
     boolean = check_buffer_needed(user_input)
     
     if boolean == False:             # That is no buffer needed
-        # What if we use a custom model here pre-trained in sports and specially trained in baseball?
+        print('buffer not needed!')
         
+        # What if we use a custom model here pre-trained in sports and specially trained in baseball?
         processed_output = panel_response(user_input)                                           
         return jsonify({"response": processed_output})
 
+
     else:            # that is buffer is required
+        print('buffer is needed!')
+
+        # Make a post request to the extension with the action getBuffer. (I am worried about the syntax here)
         response = requests.post(
             f"http://127.0.0.1:5000/extensions/{chrome_extension_id}/getBuffer",
             json={'action': "getBuffer"}
@@ -121,6 +148,8 @@ def process_input():
             video_data = response.content
             with open("received_video.webm", "wb") as f:
                 f.write(video_data)
+
+            # now we gotta process this
             return jsonify({"response": "Buffer received and saved"}), 200
         else:
             return jsonify({"error": "Failed to get buffer"}), 500
