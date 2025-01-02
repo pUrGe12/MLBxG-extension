@@ -2,7 +2,7 @@ torch
 torchvision
 opencv-python
 numpy
-sort-tracker
+deepsort
 pandas
 
 Flask-Cors
