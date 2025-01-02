@@ -38,3 +38,12 @@ This is the options page. This page is to help you predict your MLB future and a
 Have created seperate ports for the panel and the options page because it will be much easier to manage and make changes in that.
 
 # Installing
+
+Create a virtual environment otherwise there might be version conflicts.
+
+    python3 -m venv duxMLB
+    source duxMLB/bin/activate
+
+Then install the dependencies using
+
+    pip install -r requirements.txt
