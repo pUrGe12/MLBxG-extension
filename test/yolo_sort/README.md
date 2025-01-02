@@ -1,11 +1,18 @@
-# Training and testing YOLOv5
+# Testing YOLOv5
 
 1. Create a Manual dataset (painful)
-2. Create a Roboflow dataset (not as painful)
+🚀 Create a Roboflow dataset (not as painful) 
 
-- [ ] Collect a bunch of baseball images (in the wild, so during the game itself not static images)
-- [ ] Create labels manually
-- [ ] Prepare it for YOLOv5 by exporting it in the right format
-- [ ] Select a model (we'll go with YOLOv5s)
+- [x] Test bounding box for a static image in the wild 
+- [x] Test boudning box for a video
 
-Man this is painful. Study more on how to do this.
+The problem here is that, I need to keep the threshold confidence very low for detections to happen (like 12%ish). Even then, the model doesn't detect baseballs sometimes.
+
+**The likely issue is that, the images we've used to train are more focused on the baseball, rather than happening in a real game. Find better images and train it again**
+
+- [ ] Test the calculations
+
+# Training
+
+These are the steps you need to follow to train your YOLOv5s model.
+

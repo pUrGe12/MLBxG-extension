@@ -14,4 +14,6 @@ Workflow 2 - `deeplearning approach`
 ✔️ Use YOLOv5 fine-tuned on baseball images to isolate the baseball in the buffer video (we can apply some CV techniques to reduce the effects of excessive and changing lightning)
 ✔️ Use SORT then on the bounding box and calculate metrics
 
-- [ ] Fine-tune YOLOv5 on baseball images.
+- [x] Fine-tune YOLOv5 on baseball images.
+
+**Get better data!**
