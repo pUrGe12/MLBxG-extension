@@ -19,3 +19,6 @@ Workflow 2 - `deeplearning approach`
 - [x] Fine-tune YOLOv5 on baseball images.
 
 **Get better data!**
+
+### API test
+- [ ] Make a pinecone setup

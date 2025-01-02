@@ -25,28 +25,6 @@ genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel('gemini-pro')
 chat = model.start_chat(history=[])
 
-def processVideoForStatcastData(video_complete):
-    import cv2
-
-    # the VideoCapture class requires a path or does it also work with in-house videos? Like if I generate a mp4 right here, will it be able to read it?
-    cap = cv2.VideoCapture(video_complete)
-    fgbg = cv2.createBackgroundSubtractorMOG2()
-
-    while(True):
-        ret, frame = cap.read()
-        fgmask = fgbg.apply(frame)
-
-        cv2.imshow('fgmask', fgmask)
-        cv2.imshow('frame', frame)
-
-        k = cv2.waitKey(30) & 0xff
-        if k == 27:
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-
 def check_buffer_needed(user_prompt):
     prompt = str(buffer_needed_prompt[0]) + f"""
                                 This is the user's prompt: {user_prompt}
