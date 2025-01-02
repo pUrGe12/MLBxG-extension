@@ -1,173 +1,362 @@
-from deep_sort_realtime.deepsort_tracker import DeepSort
+# Making bounding box for a single image
+
+# import torch
+# import cv2
+
+# class BaseballDetector:
+#     def __init__(self, weights_path, ball_class=0, conf_threshold=0.5):
+#         """
+#         Initialize the baseball detector.
+#         weights_path: Path to YOLOv5 weights (e.g., best.pt).
+#         ball_class: Class index for the baseball in the YOLO model.
+#         conf_threshold: Confidence threshold for detection.
+#         """
+#         self.model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights_path)
+#         self.model.conf = conf_threshold
+#         self.ball_class = ball_class
+
+#     def detect_baseball(self, image_path, output_path=None):
+#         """
+#         Detect baseball in a still image.
+#         image_path: Path to the input image.
+#         output_path: Path to save the output image with detections (optional).
+#         """
+#         # Load image
+#         image = cv2.imread(image_path)
+#         if image is None:
+#             raise FileNotFoundError(f"Image not found: {image_path}")
+        
+#         # Run YOLO detection
+#         results = self.model(image)                       # Since the model was trained with images of size 416x416, but if I use that then it messes up!
+#         detections = results.xyxy[0].cpu().numpy()
+        
+#         # Filter detections for the baseball class
+#         baseball_detections = [
+#             det for det in detections if int(det[5]) == self.ball_class
+#         ]
+        
+#         # Draw bounding boxes around detected baseballs
+#         for det in baseball_detections:
+#             x1, y1, x2, y2, conf, cls = det
+#             cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+#             cv2.putText(
+#                 image,
+#                 f"Baseball {conf:.2f}",
+#                 (int(x1), int(y1) - 10),
+#                 cv2.FONT_HERSHEY_SIMPLEX,
+#                 0.5,
+#                 (0, 255, 0),
+#                 2,
+#             )
+        
+#         # Save the output image if an output path is provided
+#         if output_path:
+#             cv2.imwrite(output_path, image)
+        
+#         return baseball_detections
+
+# # Example usage
+# if __name__ == "__main__":
+#     # Initialize detector
+#     print('starting')
+#     detector = BaseballDetector(
+#         weights_path='./baseball_detection4/weights/best.pt',
+#         ball_class=0,  # Set the class index for the baseball
+#         conf_threshold=0.10                                 # For some reason, we're getting detections with 0.12 confidence threshold. (probably cause the images are so different)
+#     )
+    
+#     # Detect baseball in an image
+#     detections = detector.detect_baseball(
+#         image_path='./baseball_img.png',
+#         output_path='output_image.png'  # Save annotated image
+#     )
+    
+#     # Print detection results
+#     for i, det in enumerate(detections, 1):
+#         print(f"Detection {i}: Bounding Box: {det[:4]}, Confidence: {det[4]:.2f}")
+
+# Making bounding box for the video frames
+
+'''
+Working:
+
+Take the code for a single image
+Apply it to each frame
+Stitch them together
+'''
+
+# import torch
+# import cv2
+# import os
+
+# class BaseballDetector:
+#     def __init__(self, weights_path, ball_class=0, conf_threshold=0.5):
+#         """
+#         Initialize the baseball detector.
+#         weights_path: Path to YOLOv5 weights (e.g., best.pt).
+#         ball_class: Class index for the baseball in the YOLO model.
+#         conf_threshold: Confidence threshold for detection.
+#         """
+#         self.model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights_path)
+#         self.model.conf = conf_threshold
+#         self.ball_class = ball_class
+
+#     def detect_baseball_in_frame(self, frame):
+#         """
+#         Detect baseball in a single frame.
+#         frame: A single frame from the video.
+#         Returns the annotated frame and detections.
+#         """
+#         results = self.model(frame)
+#         detections = results.xyxy[0].cpu().numpy()
+        
+#         # Filter detections for the baseball class
+#         baseball_detections = [
+#             det for det in detections if int(det[5]) == self.ball_class
+#         ]
+        
+#         # Draw bounding boxes around detected baseballs
+#         for det in baseball_detections:
+#             x1, y1, x2, y2, conf, cls = det
+#             cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+#             cv2.putText(
+#                 frame,
+#                 f"Baseball {conf:.2f}",
+#                 (int(x1), int(y1) - 10),
+#                 cv2.FONT_HERSHEY_SIMPLEX,
+#                 0.5,
+#                 (0, 255, 0),
+#                 2,
+#             )
+        
+#         return frame, baseball_detections
+
+#     def process_video(self, video_path, output_path):
+#         """
+#         Process a video to detect baseballs in each frame.
+#         video_path: Path to the input video.
+#         output_path: Path to save the output video.
+#         """
+#         # Open video file
+#         cap = cv2.VideoCapture(video_path)
+#         frame_rate = int(cap.get(cv2.CAP_PROP_FPS))
+#         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+#         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+#         # Initialize video writer
+#         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+#         out = cv2.VideoWriter(output_path, fourcc, frame_rate, (width, height))
+        
+#         # Process each frame
+#         frame_count = 0
+#         while cap.isOpened():
+#             ret, frame = cap.read()
+#             if not ret:
+#                 break
+            
+#             frame_count += 1
+#             print(f"Processing frame {frame_count}...")
+            
+#             # Detect baseballs in the current frame
+#             annotated_frame, _ = self.detect_baseball_in_frame(frame)
+            
+#             # Write the annotated frame to the output video
+#             out.write(annotated_frame)
+        
+#         # Release resources
+#         cap.release()
+#         out.release()
+#         print(f"Video processing completed. Output saved at {output_path}")
+
+# # Example usage
+# if __name__ == "__main__":
+#     # Initialize detector
+#     detector = BaseballDetector(
+#         weights_path='./baseball_detection4/weights/best.pt',
+#         ball_class=0,  # Set the class index for the baseball
+#         conf_threshold=0.10                         # Forced to keep this small because the model shows a very low probability
+#     )
+    
+#     # Process video
+#     detector.process_video(
+#         video_path='../baseball.mp4',
+#         output_path='output_video.mp4'
+#     )
+
+# Tracking
+
 import torch
 import cv2
+import os
 import numpy as np
-from time import time
+from deep_sort_realtime.deepsort_tracker import DeepSort
 
-def calcualte_pixel_to_feet(video_path):
-    ''' 
-    using the number of pixels taken for a pitch length, calculate the pixel_to_feet calib
-    '''
-    pass
-
-def calculate_speed(positions, frame_rate, pixel_to_feet):
-    """
-    Calculate speed given positions, frame rate and pixel to feet conversion
-    Returns speed in mph
-    """
-    if len(positions) < 2:
-        return 0
-    
-    distances = []
-    for i in range(1, len(positions)):
-        # Calculate Euclidean distance between consecutive points
-        dist = np.sqrt(
-            (positions[i][0] - positions[i-1][0])**2 +
-            (positions[i][1] - positions[i-1][1])**2
-        )
-        distances.append(dist * pixel_to_feet)  # Convert to feet
-    
-    avg_distance = np.mean(distances)
-    speed_fps = avg_distance * frame_rate
-    
-    # Convert to mph
-    speed_mph = speed_fps * 0.681818  # Convert fps to mph
-    
-    return speed_mph
-
-class BallTracker:
-    def __init__(self, weights_path, conf_threshold=0.5, pixel_to_feet=0.1):
+class BaseballDetector:
+    def __init__(self, weights_path, ball_class=0, conf_threshold=0.5):
         """
-        Initialize ball tracker
-        weights_path: path to YOLOv5 weights (best.pt)
-        conf_threshold: confidence threshold for detection
-        pixel_to_feet: conversion factor from pixels to feet
+        Initialize the baseball detector.
+        weights_path: Path to YOLOv5 weights (e.g., best.pt).
+        ball_class: Class index for the baseball in the YOLO model.
+        conf_threshold: Confidence threshold for detection.
         """
         self.model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights_path)
         self.model.conf = conf_threshold
-        
-        # Initialize DeepSORT - no model path needed
-        self.tracker = DeepSort(
-            max_age=70,
-            n_init=3,
-            max_dist=0.2,
-            max_iou_distance=0.7,
-            max_cosine_distance=0.3,
-            nn_budget=100,
-            override_track_class=None
-        )
-        
-        self.pixel_to_feet = pixel_to_feet
-        
-    def process_video(self, video_path, output_path=None):
+        self.ball_class = ball_class
+        self.tracker = DeepSort(max_age=30, n_init=3)  # Initialize DeepSORT tracker
+
+    def detect_and_track(self, frame):
         """
-        Process video file and track ball
-        Returns list of speeds for each tracked ball
+        Detect and track the baseball in a single frame.
+        frame: A single frame from the video.
+        Returns the annotated frame, detections, and tracked objects.
         """
+        # Detect baseball in the frame
+        results = self.model(frame)
+        detections = results.xyxy[0].cpu().numpy()
+        
+        # Filter detections for the baseball class
+        baseball_detections = [
+            det for det in detections if int(det[5]) == self.ball_class
+        ]
+        
+        # Format detections for DeepSORT
+        bbox_xywh = []
+        confs = []
+        for det in baseball_detections:
+            x1, y1, x2, y2, conf, cls = det
+            bbox_width = x2 - x1
+            bbox_height = y2 - y1
+            center_x = x1 + bbox_width / 2
+            center_y = y1 + bbox_height / 2
+            bbox_xywh.append([center_x, center_y, bbox_width, bbox_height])
+            confs.append(conf)
+        
+        # Validate bbox_xywh and confs
+        if not bbox_xywh:
+            return frame, {}
+        
+        # Debugging print statements
+        print("bbox_xywh:", bbox_xywh)
+        print("confs:", confs)
+        
+        try:
+            # Track objects
+            tracks = self.tracker.update_tracks(bbox_xywh, confs, frame=frame)
+        except Exception as e:
+            print(f"Error in tracker.update_tracks: {e}")
+            print("bbox_xywh:", bbox_xywh)
+            print("confs:", confs)
+            raise
+        
+        # Draw bounding boxes and calculate velocities
+        velocities = {}
+        for track in tracks:
+            if not track.is_confirmed():
+                continue
+            
+            track_id = track.track_id
+            x1, y1, x2, y2 = track.to_tlbr()
+            velocity = track.speed  # Velocity calculated by DeepSORT
+            
+            # Annotate frame
+            cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+            cv2.putText(
+                frame,
+                f"ID {track_id} | Speed: {velocity:.2f} px/frame",
+                (int(x1), int(y1) - 10),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (0, 255, 0),
+                2,
+            )
+            velocities[track_id] = velocity
+        
+        return frame, velocities
+
+
+    def process_video(self, video_path, output_path):
+        """
+        Process a video to detect, track, and calculate velocities of baseballs in each frame.
+        video_path: Path to the input video.
+        output_path: Path to save the output video.
+        """
+        # Open video file
         cap = cv2.VideoCapture(video_path)
-        frame_rate = cap.get(cv2.CAP_PROP_FPS)
+        frame_rate = int(cap.get(cv2.CAP_PROP_FPS))
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         
-        # Setup video writer if output path is provided
-        if output_path:
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-            out = cv2.VideoWriter(output_path, fourcc, frame_rate, (width, height))
+        # Initialize video writer
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(output_path, fourcc, frame_rate, (width, height))
         
-        track_history = {}  # Dictionary to store tracking history
+        # Process each frame
         frame_count = 0
-        
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
                 break
-                
+            
             frame_count += 1
+            print(f"Processing frame {frame_count}...")
             
-            # Run YOLOv5 detection
-            results = self.model(frame)
-            detections = results.xyxy[0].cpu().numpy()
+            # Detect and track baseballs in the current frame
+            annotated_frame, velocities = self.detect_and_track(frame)
             
-            # Format detections for DeepSORT
-            detections_for_deepsort = []
-            for det in detections:
-                x1, y1, x2, y2, conf, cls = det
-                ltrb = [x1, y1, x2, y2]
-                detections_for_deepsort.append((ltrb, conf, frame[int(y1):int(y2), int(x1):int(x2)]))
+            # Debug: Print velocities for each tracked object
+            for track_id, velocity in velocities.items():
+                print(f"Frame {frame_count}: Track ID {track_id} -> Velocity: {velocity:.2f} px/frame")
             
-            # Update tracker
-            tracks = self.tracker.update_tracks(detections_for_deepsort, frame=frame)
-            
-            # Process each tracked object
-            for track in tracks:
-                if not track.is_confirmed():
-                    continue
-                
-                track_id = track.track_id
-                ltrb = track.to_ltrb()
-                
-                # Calculate center point of bounding box
-                center_x = (ltrb[0] + ltrb[2]) / 2
-                center_y = (ltrb[1] + ltrb[3]) / 2
-                
-                # Store position history
-                if track_id not in track_history:
-                    track_history[track_id] = []
-                track_history[track_id].append((center_x, center_y))
-                
-                # Draw bounding box and ID
-                if output_path:
-                    cv2.rectangle(frame, 
-                                (int(ltrb[0]), int(ltrb[1])), 
-                                (int(ltrb[2]), int(ltrb[3])), 
-                                (0, 255, 0), 2)
-                    
-                    # Calculate and display speed if we have enough positions
-                    if len(track_history[track_id]) > 5:
-                        speed = calculate_speed(
-                            track_history[track_id][-5:],
-                            frame_rate,
-                            self.pixel_to_feet
-                        )
-                        cv2.putText(frame, 
-                                  f"ID: {track_id} Speed: {speed:.1f} mph",
-                                  (int(ltrb[0]), int(ltrb[1] - 10)),
-                                  cv2.FONT_HERSHEY_SIMPLEX,
-                                  0.5,
-                                  (0, 255, 0),
-                                  2)
-            
-            if output_path:
-                out.write(frame)
+            # Write the annotated frame to the output video
+            out.write(annotated_frame)
         
+        # Release resources
         cap.release()
-        if output_path:
-            out.release()
-        
-        # Calculate final speeds for each track
-        speeds = {}
-        for track_id, positions in track_history.items():
-            if len(positions) > 5:
-                speed = calculate_speed(positions, frame_rate, self.pixel_to_feet)
-                speeds[track_id] = speed
-        
-        return speeds
+        out.release()
+        print(f"Video processing completed. Output saved at {output_path}")
 
 # Example usage
 if __name__ == "__main__":
-    # Initialize tracker
-    tracker = BallTracker(
-        weights_path='baseball_detection4/weights/best.pt',
-        conf_threshold=0.5,
-        pixel_to_feet=0.1  # This value needs to be calibrated for your setup
+    # Initialize detector
+    detector = BaseballDetector(
+        weights_path='./baseball_detection4/weights/best.pt',
+        ball_class=0,  # Set the class index for the baseball
+        conf_threshold=0.10
     )
     
     # Process video
-    speeds = tracker.process_video(
+    detector.process_video(
         video_path='../baseball.mp4',
-        output_path='output.mp4'
+        output_path='output_video_with_velocity.mp4'
     )
-    
-    # Print results
-    for track_id, speed in speeds.items():
-        print(f"Ball {track_id}: {speed:.1f} mph")
+
+
+# okay some issue
+
+# Using cache found in /home/purge/.cache/torch/hub/ultralytics_yolov5_master
+# YOLOv5 🚀 2025-1-2 Python-3.11.11 torch-2.3.1 CPU
+
+# Fusing layers... 
+# Model summary: 157 layers, 7015519 parameters, 0 gradients, 15.8 GFLOPs
+# Adding AutoShape... 
+# Processing frame 1...
+# bbox_xywh: [[405.29469299316406, 243.2591094970703, 31.322662, 26.462555]]
+# confs: [0.10053124]
+# Error in tracker.update_tracks: object of type 'numpy.float64' has no len()
+# bbox_xywh: [[405.29469299316406, 243.2591094970703, 31.322662, 26.462555]]
+# confs: [0.10053124]
+# Traceback (most recent call last):
+#   File "/home/purge/Desktop/MLBxG-extension/test/yolo_sort/flow.py", line 671, in <module>
+#     detector.process_video(
+#   File "/home/purge/Desktop/MLBxG-extension/test/yolo_sort/flow.py", line 647, in process_video
+#     annotated_frame, velocities = self.detect_and_track(frame)
+#                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#   File "/home/purge/Desktop/MLBxG-extension/test/yolo_sort/flow.py", line 587, in detect_and_track
+#     tracks = self.tracker.update_tracks(bbox_xywh, confs, frame=frame)
+#              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#   File "/home/purge/miniconda3/lib/python3.11/site-packages/deep_sort_realtime/deepsort_tracker.py", line 195, in update_tracks
+#     assert len(raw_detections[0][0])==4
+#            ^^^^^^^^^^^^^^^^^^^^^^^^^
+# TypeError: object of type 'numpy.float64' has no len()
+
+# Figure this out
