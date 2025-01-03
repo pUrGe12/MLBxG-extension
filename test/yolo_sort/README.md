@@ -11,11 +11,13 @@ The problem here is that, I need to keep the threshold confidence very low for d
 
 **The likely issue is that, the images we've used to train are more focused on the baseball, rather than happening in a real game. Find better images and train it again**
 
-- [ ] Test the calculations
+- [ ] Create a new dataset and train the model again
 
 ## New Idea
 
-What we can do is, before detection, tweak each frame of the video to match the training and testing dataset. That will definetly increase the confidence rate.
+- [x] What we can do is, before detection, tweak each frame of the video to match the training and testing dataset. That will definetly increase the confidence rate.
+
+**Not working**
 
 # Training
 
