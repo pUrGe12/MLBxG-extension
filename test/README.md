@@ -18,7 +18,12 @@ Workflow 2 - `deeplearning approach`
 
 - [x] Fine-tune YOLOv5 on baseball images.
 
-**Get better data!**
+**Get better data!** cause the current ones suck
 
 ### API test
-- [ ] Make a pinecone setup
+
+- [ ] Try out if we can directly use the dictionary and regex
+
+- Else Make a pinecone setup
+
+- [ ] Parse the contents and display properly
