@@ -13,6 +13,10 @@ The problem here is that, I need to keep the threshold confidence very low for d
 
 - [ ] Test the calculations
 
+## New Idea
+
+What we can do is, before detection, tweak each frame of the video to match the training and testing dataset. That will definetly increase the confidence rate.
+
 # Training
 
 These are the steps you need to follow to train your YOLOv5s model.
