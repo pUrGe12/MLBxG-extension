@@ -23,19 +23,34 @@ This is the options page. This page is to help you predict your MLB future and a
 
 ![options page](images/options.png)
 
+---
+
+Have created seperate ports for the panel and the options page because it will be much easier to manage and make changes in that.
+
 ## Work
+
+Options page
 
 - [x] Finish the pinecone pipeline and prediction model
 - [ ] Make it look better (add the similarity table in the right div)
 
 ---
 
+Broad goals
+
 - [ ] Figure out the sending and processing of buffer
 - [ ] Train and test YOLOv5 on baseball detection in images
 - [ ] Test if the pipeline works 
 - [ ] Integrate the metric finding with panel.py
 
-Have created seperate ports for the panel and the options page because it will be much easier to manage and make changes in that.
+---
+
+Now!
+
+- [ ] Figure out the API setup today completely
+- [ ] Write out the README for instructions regarding training of YOLOv5. 
+- [ ] Start manually creating the dataset for baseballs.
+
 
 # Installing
 
