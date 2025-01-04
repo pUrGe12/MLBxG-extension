@@ -10,6 +10,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from collections import defaultdict
 
+# Imports for url_4, players 
+from dataclasses import dataclass
+from typing import Optional, List, Dict
+import json
+from datetime import datetime
+
 # Imports for url_2, roster
 from typing import Dict, List
 from dataclasses import dataclass
@@ -494,13 +500,142 @@ def figure_out_code(team_code_mapping, player_code_mapping, user_prompt):
 		print(f"Error generating: {e}")
 		return 'Try again, there was an error in generating the response'
 
+
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#																			Helper classes and functions for parsing of player data
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+@dataclass
+class Position_:
+    code: str
+    name: str
+    type: str
+    abbreviation: str
+
+@dataclass
+class BatPitchSide:
+    code: str
+    description: str
+
+@dataclass
+class Player_:
+    id: int
+    full_name: str
+    first_name: str
+    last_name: str
+    primary_number: Optional[str]
+    birth_date: datetime
+    current_age: int
+    birth_city: str
+    birth_state_province: Optional[str]
+    birth_country: str
+    height: str
+    weight: int
+    active: bool
+    primary_position: Position_
+    use_name: str
+    use_last_name: str
+    middle_name: Optional[str]
+    boxscore_name: str
+    nick_name: Optional[str]
+    gender: str
+    is_player: bool
+    is_verified: bool
+    draft_year: Optional[int]
+    pronunciation: Optional[str]
+    last_played_date: Optional[str]
+    mlb_debut_date: Optional[str]
+    bat_side: BatPitchSide
+    pitch_hand: BatPitchSide
+    name_first_last: str
+    name_slug: str
+    first_last_name: str
+    last_first_name: str
+    last_init_name: str
+    init_last_name: str
+    full_fml_name: str
+    full_lfm_name: str
+    strike_zone_top: float
+    strike_zone_bottom: float
+
+def parse_player_data(json_data: str) -> List[Player_]:
+    """
+    Parse MLB player JSON data and return a list of Player objects.
+    """
+    data = json.loads(json_data)
+    players = []
+    
+    for player_data in data['people']:
+        # Parse position
+        position = Position(
+            code=player_data['primaryPosition']['code'],
+            name=player_data['primaryPosition']['name'],
+            type=player_data['primaryPosition']['type'],
+            abbreviation=player_data['primaryPosition']['abbreviation']
+        )
+        
+        # Parse bat and pitch sides
+        bat_side = BatPitchSide(
+            code=player_data['batSide']['code'],
+            description=player_data['batSide']['description']
+        )
+        pitch_hand = BatPitchSide(
+            code=player_data['pitchHand']['code'],
+            description=player_data['pitchHand']['description']
+        )
+        
+        # Parse birth date
+        birth_date = datetime.strptime(player_data['birthDate'], '%Y-%m-%d')
+        
+        # Create Player object
+        player = Player_(
+            id=player_data['id'],
+            full_name=player_data['fullName'],
+            first_name=player_data['firstName'],
+            last_name=player_data['lastName'],
+            primary_number=player_data.get('primaryNumber'),
+            birth_date=birth_date,
+            current_age=player_data['currentAge'],
+            birth_city=player_data['birthCity'],
+            birth_state_province=player_data.get('birthStateProvince'),
+            birth_country=player_data['birthCountry'],
+            height=player_data['height'],
+            weight=player_data['weight'],
+            active=player_data['active'],
+            primary_position=position,
+            use_name=player_data['useName'],
+            use_last_name=player_data['useLastName'],
+            middle_name=player_data.get('middleName'),
+            boxscore_name=player_data['boxscoreName'],
+            nick_name=player_data.get('nickName'),
+            gender=player_data['gender'],
+            is_player=player_data['isPlayer'],
+            is_verified=player_data['isVerified'],
+            draft_year=player_data.get('draftYear'),
+            pronunciation=player_data.get('pronunciation'),
+            last_played_date=player_data.get('lastPlayedDate'),
+            mlb_debut_date=player_data.get('mlbDebutDate'),
+            bat_side=bat_side,
+            pitch_hand=pitch_hand,
+            name_first_last=player_data['nameFirstLast'],
+            name_slug=player_data['nameSlug'],
+            first_last_name=player_data['firstLastName'],
+            last_first_name=player_data['lastFirstName'],
+            last_init_name=player_data['lastInitName'],
+            init_last_name=player_data['initLastName'],
+            full_fml_name=player_data['fullFMLName'],
+            full_lfm_name=player_data['fullLFMName'],
+            strike_zone_top=player_data['strikeZoneTop'],
+            strike_zone_bottom=player_data['strikeZoneBottom']
+        )
+        players.append(player)
+    
+    return players
+
+
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # 																			Helper classes and functions for helping with parsing of url_2
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-from enum import Enum
-from dataclasses import dataclass
-from typing import Dict, List
 
 class PlayerStatus(Enum):
 	ACTIVE = "A"
@@ -854,6 +989,41 @@ def print_schedule_summary(analysis: Dict):
     
     add_to_output(f"\nHome Team Win Percentage: {analysis['home_team_win_pct']}")
 
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#																						Pretty printing LLM
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def pretty_print(raw_information):
+	'''
+	This is a pretty_printer which takes in the raw information obtained via the API endpoints and prints it in a easy to ready manner
+	'''
+
+	prompt = pretty_print_prompt + f"""
+			This is the raw information: {raw_information} \n
+					"""
+
+	try:
+		output = ''
+		response = chat.send_message(prompt, stream=False, safety_settings={
+			HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+			HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+			HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+			HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE
+		})
+
+		if not response:
+			raise ValueError('No response received')
+
+		for chunk in response:
+			if chunk.text:
+				output += str(chunk.text)
+
+		return output
+
+	except Exception as e:
+		print(f"Something went wrong: {e}\n")
+		return "Try again"
+
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #																				API calling and parsing here
@@ -875,12 +1045,6 @@ def call_API(name_code_tuple, year=2024, game_type='R'):
 		url_1 = f"https://statsapi.mlb.com/api/v1/schedule?sportId=1&season={year}&gameType={game_type}"
 		webpage = requests.get(url_1, headers=headers).text
 
-		import json
-		from typing import Dict, List, Optional, Tuple
-		from dataclasses import dataclass
-		from datetime import datetime
-		from collections import defaultdict
-    
 		schedule = parse_schedule(webpage)
 		analysis = get_schedule_analysis(schedule)
 		print_schedule_summary(analysis)
@@ -895,23 +1059,85 @@ def call_API(name_code_tuple, year=2024, game_type='R'):
 
 		# This is the relevant url for the player's data
 		url_4 = f"https://statsapi.mlb.com/api/v1/people/{code}"
-		requests.get(url_4, headers=headers).text
+		webpage = requests.get(url_4, headers=headers).text
 
 		# Now parse this
+		players = parse_player_data(webpage)
 
-		output = 'parsed content here'
-		return output
+		_output_ = """"""  										# ensuring this is empty
+		for player in players:
+			print(f"\nPlayer Information:")
+			_output_ += "\nPlayer Information:"
+
+			print(f"Name: {player.full_name}")
+			_output_ = f"Name: {player.full_name}"
+
+			print(f"Position: {player.primary_position.name}")
+			_output_ =  f"Position: {player.primary_position.name}"
+
+			print(f"Birth Date: {player.birth_date.strftime('%B %d, %Y')}")
+			_output_ = f"Birth Date: {player.birth_date.strftime('%B %d, %Y')}"
+
+			print(f"From: {player.birth_city}, {player.birth_state_province}, {player.birth_country}")
+			_output_ = f"From: {player.birth_city}, {player.birth_state_province}, {player.birth_country}"
+
+			print(f"Height/Weight: {player.height}, {player.weight} lbs")
+			_output_ = f"Height/Weight: {player.height}, {player.weight} lbs"
+
+			print(f"Bats: {player.bat_side.description}")
+			_output_ = f"Bats: {player.bat_side.description}"
+
+			print(f"Throws: {player.pitch_hand.description}")
+			_output_ = f"Throws: {player.pitch_hand.description}"
+
+			print(f"Draft Year: {player.draft_year}")
+			_output_ = f"Draft Year: {player.draft_year}"
+
+			print(f"MLB Debut: {player.mlb_debut_date}")
+			_output_ = f"MLB Debut: {player.mlb_debut_date}"
+
+			print(f"Last Played: {player.last_played_date}")
+			_output_ = f"Last Played: {player.last_played_date}"
+
+			print(f"Active: {player.active}")
+			_output_ = f"Active: {player.active}"
+
+			print(f"Nick_name: {player.nick_name}")
+			_output_ = f"Nick_name: {player.nick_name}"
+
+			print(f"Name_slug: {player.name_slug}")
+			_output_ = f"Name_slug: {player.name_slug}"
+
+			print(f"Bat_side: {player.bat_side}")
+			_output_ = f"Bat_side: {player.bat_side}"
+
+			print(f"Top strike zone: {player.strike_zone_top}")
+			_output_ = f"Top strike zone: {player.strike_zone_top}"
+
+			print(f"Pitch hand: {player.pitch_hand}")
+			_output_ = f"Pitch hand: {player.pitch_hand}"
+
+			print(f"Gender: {player.gender}")
+			_output_ = f"Gender: {player.gender}"
+
+			print(f"Primary position: {player.primary_position}")
+			_output_ = f"Primary position: {player.primary_position}"
+
+			print(f"Primary number: {player.primary_number}")
+			_output_ = f"Primary number: {player.primary_number}"
+
+			print(f"Current age: {player.current_age}")
+			_output_ = f"Current age: {player.current_age}"
+
+		_output_ = 'parsed content here'
+
+		return _output_
 
 	elif 'team' in type_:
 		output = "" 				# we'll write everything we print here
 		url_2 = f"https://statsapi.mlb.com/api/v1/teams/{code}/roster?season={year}"
 
 		json_str = requests.get(url_2, headers=headers).text
-
-		# This is the parsing code
-		from typing import Dict, List
-		from dataclasses import dataclass
-		from enum import Enum
 
 		roster = parse_roster_data(json_str)
 
@@ -960,38 +1186,7 @@ def call_API(name_code_tuple, year=2024, game_type='R'):
 		return output
 
 
-def pretty_print(raw_information):
-	'''
-	This is a pretty_printer which takes in the raw information obtained via the API endpoints and prints it in a easy to ready manner
-	'''
-
-	prompt = pretty_print_prompt + f"""
-			This is the raw information: {raw_information} \n
-					"""
-
-	try:
-		output = ''
-		response = chat.send_message(prompt, stream=False, safety_settings={
-			HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-			HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-			HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-			HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE
-		})
-
-		if not response:
-			raise ValueError('No response received')
-
-		for chunk in response:
-			if chunk.text:
-				output += str(chunk.text)
-
-		return output
-
-	except Exception as e:
-		print(f"Something went wrong: {e}\n")
-		return "Try again"
-
-user_prompt = "What is the seasons schedule"
+user_prompt = "Who is Lance Lynn?"
 name_code_tuple = figure_out_code(team_code_mapping, player_code_mapping, user_prompt)
 
 # print(name_code_tuple)
