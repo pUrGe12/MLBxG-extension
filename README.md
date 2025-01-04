@@ -9,6 +9,8 @@
 
 [![OS](https://img.shields.io/badge/OS-linux%2C%20windows%2C%20macOS-0078D4)](https://docs.abblix.com/docs/technical-requirements)
 
+</div>
+
 Developing an extension that can read your screen and give you live data updates and tips on your favourite baseball games! (With permission)
 
 > [!IMPORTANT]
