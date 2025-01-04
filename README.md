@@ -62,13 +62,23 @@ Have created seperate ports for the panel and the options page because it will b
 
 # Work
 
+                6th Jan 2025 --> Work solely on testing different datasets.
+
+                If nothing works then 
+
+                7th Jan 2025 - 10th Jan 2025 (that is 4 days)
+                Work on creating new dataset for the model. Need atleast 200 images. All labelled and all exactly in `roboflow` style.
+
+                Then train on that and see.
+
+                If that also doesn't work (or if the confidence threshold is below 20%) then fuck yolov5. Look at `yolov7`.
+
 Completed:
 
 - [x] API setup and querying through the panel
 - [x] Pinecone pipeline and prediction model
-- [ ] Writing README for instructions regarding training YOLOv5
+- [x] Writing README for instructions regarding training YOLOv5
 - [ ] Start manually creating the dataset for baseballs.
-- [ ] Train YOLOv5 on a better dataset
 
 Options page
 
