@@ -1,17 +1,46 @@
-# MLBxG-extension
+<div align="center"><a name="readme-top"></a>
+
+# duxMLB - an extension
 
 <p align="center">
   <img src="https://img.shields.io/badge/Code-Python-informational?style=flat&logo=python&color=blue" alt="Python" />
   <img src="https://img.shields.io/badge/Code-JavaScript-informational?style=flat&logo=javascript&color=yellow" alt="JavaScript" />
 </p>
 
+[![OS](https://img.shields.io/badge/OS-linux%2C%20windows%2C%20macOS-0078D4)](https://docs.abblix.com/docs/technical-requirements)
+
 Developing an extension that can read your screen and give you live data updates and tips on your favourite baseball games! (With permission)
 
-## The workflow
+> [!IMPORTANT]
+> What can you do with duxMLB?
+
+**duxMLB** offers two features
+1. Panel page: For when you are watching a YouTube match.
+2. Options page: For predicting your MLB future by comparing you to top players!
+
+There is also a `guide` page which explains how the site was made and contains all the techincal explanations.
+
+## What is the panel page?
+
+The panel page contains a `gemini` model that allows you to do the following
+
+- [x] Ask the model about any players, team or MLB schedule and it will give `upto date` information (regards to APIs provided by Google)
+- [ ] You can, while watching a LIVE match, ask the model statcast data and it will analyize and answer!
+
+> [!NOTE]
+> What does that mean?
+
+You can ask it questions like "Yoo! How fast was that pitch?" as soon as the pitcher finished pitching, and we will process the video in the backend, analyse the speed and tell it to you!
+
+`duxMLB` is the most complete MLB guide that exists today.
+
+---
+
+# The workflow
 
 ![duxMLB](images/duxMLB_V2.png)
 
-## The looks
+# The looks
 
 This is the side panel. You can open this in any youtube video (currently works only for youtube).
 
@@ -27,7 +56,7 @@ This is the options page. This page is to help you predict your MLB future and a
 
 Have created seperate ports for the panel and the options page because it will be much easier to manage and make changes in that.
 
-## Work
+# Work
 
 Completed:
 
