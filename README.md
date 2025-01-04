@@ -1,5 +1,7 @@
 <div align="center"><a name="readme-top"></a>
 
+![Icon](./images/icon.png)
+
 # duxMLB - an extension
 
 <p align="center">
