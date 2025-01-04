@@ -29,28 +29,26 @@ Have created seperate ports for the panel and the options page because it will b
 
 ## Work
 
+Completed:
+
+- [x] API setup and querying through the panel
+- [x] Pinecone pipeline and prediction model
+- [ ] Writing README for instructions regarding training YOLOv5
+- [ ] Start manually creating the dataset for baseballs.
+
 Options page
 
-- [x] Finish the pinecone pipeline and prediction model
 - [ ] Make it look better (add the similarity table in the right div)
 
 ---
 
 Broad goals
 
-- [ ] Figure out the sending and processing of buffer
-- [ ] Train and test YOLOv5 on baseball detection in images
-- [ ] Test if the pipeline works 
-- [ ] Integrate the metric finding with panel.py
+- [ ] Train YOLOv5 on a better dataset
+- [ ] Figure out the sending and recieving of the buffer video
+- [ ] Integrate the finding the statcast data with panel.py
 
 ---
-
-Now!
-
-- [ ] Figure out the API setup today completely
-- [ ] Write out the README for instructions regarding training of YOLOv5. 
-- [ ] Start manually creating the dataset for baseballs.
-
 
 # Installing
 
