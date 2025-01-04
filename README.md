@@ -1,6 +1,6 @@
 <div align="center"><a name="readme-top"></a>
 
-![Icon](./images/icon.png)
+<img src="./images/icon.png" alt="Icon" style="width: 200px; height: auto; border-radius: 15px;">
 
 # duxMLB - an extension
 
