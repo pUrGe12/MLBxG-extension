@@ -15,6 +15,10 @@ from prompts import genPrompt, buffer_needed_prompt
 from dotenv import load_dotenv
 from pathlib import Path
 
+# Imports for API querying 
+from API_querying.query import call_API, pretty_print, figure_out_code
+from API_querying.query import team_code_mapping, player_code_mapping
+
 load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / '.env')
 
 API_KEY = str(os.getenv("API_KEY")).strip()
@@ -22,8 +26,11 @@ chrome_extension_id = str(os.getenv("chrome_extension_id")).strip()
 
 genai.configure(api_key=API_KEY)
 
-model = genai.GenerativeModel('gemini-pro')
-chat = model.start_chat(history=[])
+model_ = genai.GenerativeModel('gemini-pro')
+chat_ = model_.start_chat(history=[])
+
+model__ = genai.GenerativeModel('gemini-pro')
+chat__ = model__.start_chat(history=[])
 
 def check_buffer_needed(user_prompt):
     prompt = str(buffer_needed_prompt[0]) + f"""
@@ -32,7 +39,7 @@ def check_buffer_needed(user_prompt):
 
     try:
         output = ''
-        response = chat.send_message(prompt, stream=False, safety_settings={
+        response = chat_.send_message(prompt, stream=False, safety_settings={
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE, 
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
@@ -54,18 +61,18 @@ def check_buffer_needed(user_prompt):
             return False
 
     except Exception as e:
-        print(f"Error generating GPT response in model_json: {e}")
+        print(f"Error generating response: {e}")
         return 'Try again'
 
 
-def panel_response(user_prompt):
+def is_it_gen_stuff(user_prompt):
     prompt = str(genPrompt[0]) + f"""
-                                This is the user's prompt: {user_prompt}
+                        This is the user's prompt: {user_prompt}
         """
     
     try:
         output = ''
-        response = chat.send_message(prompt, stream=False, safety_settings={
+        response = chat__.send_message(prompt, stream=False, safety_settings={
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE, 
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
@@ -80,7 +87,11 @@ def panel_response(user_prompt):
             if chunk.text:
                 output += str(chunk.text)
 
-        return output
+        if 'yes' in output.lower().strip():
+            return True
+
+        else:
+            return False
 
     except Exception as e:
         print(f"Error generating GPT response in model_json: {e}")
@@ -107,10 +118,26 @@ def process_input():
     boolean = check_buffer_needed(user_input)
     
     if boolean == False:             # That is no buffer needed
-        print('buffer not needed!')
+        # print('buffer not needed!')
         
-        # What if we use a custom model here pre-trained in sports and specially trained in baseball?
-        processed_output = panel_response(user_input)                                           
+        '''
+        Here, we may have to call the APIs
+        The idea here is to parse the input, determine if its general baseball stuff or particular to a player, or a team or schedule, in which case we'll call the API querying function.
+        '''
+
+        if is_it_gen_stuff(user_input):
+            print('Requires APIs')
+            name_code_tuple = figure_out_code(team_code_mapping, player_code_mapping, user_input)
+            output = call_API(name_code_tuple)
+
+            # processed_output = output
+            # print(output)
+
+            processed_output = pretty_print(output)
+        
+        else:
+            processed_output = "hello always!"          # We'll add a normal response generator here
+
         return jsonify({"response": processed_output})
 
 

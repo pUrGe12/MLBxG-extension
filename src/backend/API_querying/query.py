@@ -353,7 +353,7 @@ except IndexError:
 	pass
 
 player_code_mapping = {}						# We'll pass this directly to the LLM
-file_path = r"razzball.csv"
+file_path = r"API_querying/razzball.csv"
 
 with open(file_path, mode='r', encoding='utf-8') as fp:
 	csv_reader = csv.DictReader(fp)
@@ -405,7 +405,7 @@ def figure_out_code(team_code_mapping, player_code_mapping, user_prompt):
 
 	assert type(team_code_mapping) == dict and type(player_code_mapping) == dict, 'entered parameters are not of type dict'
 
-	load_dotenv(dotenv_path=Path(__file__).parent.parent / '.env')
+	load_dotenv(dotenv_path=Path(__file__).parent.parent.parent.parent / '.env')
 
 	API_KEY = str(os.getenv("API_KEY")).strip()
 
@@ -998,13 +998,26 @@ def pretty_print(raw_information):
 	This is a pretty_printer which takes in the raw information obtained via the API endpoints and prints it in a easy to ready manner
 	'''
 
+	load_dotenv(dotenv_path=Path(__file__).parent.parent.parent.parent / '.env')
+
+	API_KEY = str(os.getenv("API_KEY")).strip()
+
+	# print(API_KEY)
+
+	chrome_extension_id = str(os.getenv("chrome_extension_id")).strip()
+
+	genai.configure(api_key=API_KEY)
+
+	model_ = genai.GenerativeModel('gemini-pro')
+	_chat_ = model_.start_chat(history=[])
+
 	prompt = pretty_print_prompt + f"""
 			This is the raw information: {raw_information} \n
 					"""
 
 	try:
 		output = ''
-		response = chat.send_message(prompt, stream=False, safety_settings={
+		response = _chat_.send_message(prompt, stream=False, safety_settings={
 			HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
 			HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
 			HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
@@ -1070,66 +1083,64 @@ def call_API(name_code_tuple, year=2024, game_type='R'):
 			_output_ += "\nPlayer Information:"
 
 			print(f"Name: {player.full_name}")
-			_output_ = f"Name: {player.full_name}"
+			_output_ += f"\nName: {player.full_name}"
 
 			print(f"Position: {player.primary_position.name}")
-			_output_ =  f"Position: {player.primary_position.name}"
+			_output_ +=  f"\nPosition: {player.primary_position.name}"
 
 			print(f"Birth Date: {player.birth_date.strftime('%B %d, %Y')}")
-			_output_ = f"Birth Date: {player.birth_date.strftime('%B %d, %Y')}"
+			_output_ += f"\nBirth Date: {player.birth_date.strftime('%B %d, %Y')}"
 
 			print(f"From: {player.birth_city}, {player.birth_state_province}, {player.birth_country}")
-			_output_ = f"From: {player.birth_city}, {player.birth_state_province}, {player.birth_country}"
+			_output_ += f"\nFrom: {player.birth_city}, {player.birth_state_province}, {player.birth_country}"
 
 			print(f"Height/Weight: {player.height}, {player.weight} lbs")
-			_output_ = f"Height/Weight: {player.height}, {player.weight} lbs"
+			_output_ += f"\nHeight/Weight: {player.height}, {player.weight} lbs"
 
 			print(f"Bats: {player.bat_side.description}")
-			_output_ = f"Bats: {player.bat_side.description}"
+			_output_ += f"\nBats: {player.bat_side.description}"
 
 			print(f"Throws: {player.pitch_hand.description}")
-			_output_ = f"Throws: {player.pitch_hand.description}"
+			_output_ += f"\nThrows: {player.pitch_hand.description}"
 
 			print(f"Draft Year: {player.draft_year}")
-			_output_ = f"Draft Year: {player.draft_year}"
+			_output_ += f"\nDraft Year: {player.draft_year}"
 
 			print(f"MLB Debut: {player.mlb_debut_date}")
-			_output_ = f"MLB Debut: {player.mlb_debut_date}"
+			_output_ += f"\nMLB Debut: {player.mlb_debut_date}"
 
 			print(f"Last Played: {player.last_played_date}")
-			_output_ = f"Last Played: {player.last_played_date}"
+			_output_ += f"\nLast Played: {player.last_played_date}"
 
 			print(f"Active: {player.active}")
-			_output_ = f"Active: {player.active}"
+			_output_ += f"\nActive: {player.active}"
 
 			print(f"Nick_name: {player.nick_name}")
-			_output_ = f"Nick_name: {player.nick_name}"
+			_output_ += f"\nNick_name: {player.nick_name}"
 
 			print(f"Name_slug: {player.name_slug}")
-			_output_ = f"Name_slug: {player.name_slug}"
+			_output_ += f"\nName_slug: {player.name_slug}"
 
 			print(f"Bat_side: {player.bat_side}")
-			_output_ = f"Bat_side: {player.bat_side}"
+			_output_ += f"\nBat_side: {player.bat_side}"
 
 			print(f"Top strike zone: {player.strike_zone_top}")
-			_output_ = f"Top strike zone: {player.strike_zone_top}"
+			_output_ += f"\nTop strike zone: {player.strike_zone_top}"
 
 			print(f"Pitch hand: {player.pitch_hand}")
-			_output_ = f"Pitch hand: {player.pitch_hand}"
+			_output_ += f"\nPitch hand: {player.pitch_hand}"
 
 			print(f"Gender: {player.gender}")
-			_output_ = f"Gender: {player.gender}"
+			_output_ += f"\nGender: {player.gender}"
 
 			print(f"Primary position: {player.primary_position}")
-			_output_ = f"Primary position: {player.primary_position}"
+			_output_ += f"\nPrimary position: {player.primary_position}"
 
 			print(f"Primary number: {player.primary_number}")
-			_output_ = f"Primary number: {player.primary_number}"
+			_output_ += f"\nPrimary number: {player.primary_number}"
 
 			print(f"Current age: {player.current_age}")
-			_output_ = f"Current age: {player.current_age}"
-
-		_output_ = 'parsed content here'
+			_output_ += f"\nCurrent age: {player.current_age}"
 
 		return _output_
 
@@ -1184,12 +1195,3 @@ def call_API(name_code_tuple, year=2024, game_type='R'):
 
 		# Since we have added all the information in the output (exactly as it is being printed) we are good to go
 		return output
-
-
-user_prompt = "Who is Lance Lynn?"
-name_code_tuple = figure_out_code(team_code_mapping, player_code_mapping, user_prompt)
-
-# print(name_code_tuple)
-
-output = call_API(name_code_tuple)
-print(output)
