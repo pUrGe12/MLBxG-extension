@@ -1049,7 +1049,8 @@ def call_API(name_code_tuple, year=2024, game_type='R'):
 	I have entered the default values for the year and game_type because I am sure the user will not be entering the year and all
 	'''
 
-	assert type(name_code_tuple) == tuple, 'You are trying to feed me bad data! Try again'
+	assert type(name_code_tuple) == tuple, 'Maybe you made a mistake in the name? Check your spellings please! I am doing this all manually, an AI can get tired!'
+	# print(name_code_tuple)
 
 	# After assert we don't have to use try and accept
 	type_, code = name_code_tuple

@@ -1,6 +1,3 @@
-from google.generativeai.types import HarmCategory, HarmBlockThreshold
-import google.generativeai as genai
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
@@ -9,93 +6,12 @@ import sys
 
 import requests             # Making post requests to the getBuffer method
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))) # adding the root directory to path
-from prompts import genPrompt, buffer_needed_prompt
-
-from dotenv import load_dotenv
-from pathlib import Path
-
 # Imports for API querying 
 from API_querying.query import call_API, pretty_print, figure_out_code
 from API_querying.query import team_code_mapping, player_code_mapping
 
-load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / '.env')
-
-API_KEY = str(os.getenv("API_KEY")).strip()
-chrome_extension_id = str(os.getenv("chrome_extension_id")).strip()
-
-genai.configure(api_key=API_KEY)
-
-model_ = genai.GenerativeModel('gemini-pro')
-chat_ = model_.start_chat(history=[])
-
-model__ = genai.GenerativeModel('gemini-pro')
-chat__ = model__.start_chat(history=[])
-
-def check_buffer_needed(user_prompt):
-    prompt = str(buffer_needed_prompt[0]) + f"""
-                                This is the user's prompt: {user_prompt}
-    """
-
-    try:
-        output = ''
-        response = chat_.send_message(prompt, stream=False, safety_settings={
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE, 
-            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE
-        })
-
-        # Sometimes the model acts up...
-        if not response:
-            raise ValueError("No response received")
-
-        for chunk in response:
-            if chunk.text:
-                output += str(chunk.text)
-
-        if 'yes' in output.lower().strip():
-            return True
-
-        else:
-            return False
-
-    except Exception as e:
-        print(f"Error generating response: {e}")
-        return 'Try again'
-
-
-def is_it_gen_stuff(user_prompt):
-    prompt = str(genPrompt[0]) + f"""
-                        This is the user's prompt: {user_prompt}
-        """
-    
-    try:
-        output = ''
-        response = chat__.send_message(prompt, stream=False, safety_settings={
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE, 
-            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE
-        })
-
-        # Sometimes the model acts up...
-        if not response:
-            raise ValueError("No response received")
-
-        for chunk in response:
-            if chunk.text:
-                output += str(chunk.text)
-
-        if 'yes' in output.lower().strip():
-            return True
-
-        else:
-            return False
-
-    except Exception as e:
-        print(f"Error generating GPT response in model_json: {e}")
-        return 'Try again'
+# Imports for helpers
+from models.helper_models import check_buffer_needed, is_it_gen_stuff
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -127,13 +43,14 @@ def process_input():
 
         if is_it_gen_stuff(user_input):
             print('Requires APIs')
+
             name_code_tuple = figure_out_code(team_code_mapping, player_code_mapping, user_input)
             output = call_API(name_code_tuple)
 
             # processed_output = output
             # print(output)
 
-            processed_output = pretty_print(output)
+            processed_output = pretty_print(output)             # not doing this if the output is too big as in the case of the schedule
         
         else:
             processed_output = "hello always!"          # We'll add a normal response generator here
