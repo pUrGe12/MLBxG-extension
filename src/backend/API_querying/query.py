@@ -395,7 +395,9 @@ Ensure that you output in exactly in this format. Do not include any brackets of
 pretty_print_prompt = """
 You are duxMLB. You have been provided some raw information on baseball stats of either a team or a player. Your task is to beautify it and make it look cleaner to present to a user.
 
-You must output the facts exactly as provided, only ensure that they follow grammatical rules and are easy to read by a user.
+You must output the facts exactly as provided, but in a paragraph format, with proper english rules.
+
+The raw information will have data in a dictionary format (that is, 'value of x':'value' sort of thing), you must read through all of the data and output a paragraph that neatly summaries the entire contents.
 """
 
 def figure_out_code(team_code_mapping, player_code_mapping, user_prompt):
