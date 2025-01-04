@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 3
+names: ['ball', 'bat', 'glove']
+
+roboflow:
+  workspace: yolotest1
+  project: yolov5test2
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/yolotest1/yolov5test2/dataset/1
