@@ -1,3 +1,3 @@
-## This is not detecting the ball or anything at all! Why is that?
+# Trained models
 
-> Figure this out
+These are trained models to find the best fit for a live baseball
