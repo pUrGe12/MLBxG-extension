@@ -12,6 +12,7 @@ from API_querying.query import team_code_mapping, player_code_mapping
 
 # Imports for helpers
 from models.helper_models import check_buffer_needed, is_it_gen_stuff
+from models.helper_models import gen_talk
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -53,7 +54,7 @@ def process_input():
             processed_output = pretty_print(output)             # not doing this if the output is too big as in the case of the schedule
         
         else:
-            processed_output = "hello always!"          # We'll add a normal response generator here
+            processed_output = gen_talk(user_input)          # We'll add a normal response generator here
 
         return jsonify({"response": processed_output})
 
