@@ -6,8 +6,11 @@ import sys
 
 import requests             # Making post requests to the getBuffer method
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # adding the root directory to path
+'''
+We might not have to do this at all, because API_querying and models and prompts are all in the same directory... '''
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # adding the root directory to path
 # This should be done before any relative imports
+
 
 # Imports for API querying 
 from API_querying.query import call_API, pretty_print, figure_out_code
