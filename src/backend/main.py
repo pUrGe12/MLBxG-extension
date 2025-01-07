@@ -41,10 +41,10 @@ import sys
 
 from prompts import statPrompt
 
-from dotenv import load_dotenv
+# from dotenv import load_dotenv                # Don't need to do this if we've specified .env contents in render
 from pathlib import Path
 
-load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / '.env')
+# load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / '.env')
 
 API_KEY = str(os.getenv("API_KEY")).strip()
 pinecone_api_key = str(os.getenv("pinecone_api_key")).strip()
