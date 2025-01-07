@@ -4,13 +4,13 @@ import google.generativeai as genai
 import os
 import sys
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))) # adding the root directory to path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))       # adding the root directory to path
 from prompts import genPrompt, buffer_needed_prompt, talk_normally
 
 from dotenv import load_dotenv
 from pathlib import Path
 
-load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / '.env')
+# load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / '.env')
 
 API_KEY = str(os.getenv("API_KEY")).strip()
 

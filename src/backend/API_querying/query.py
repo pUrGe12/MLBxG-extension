@@ -27,8 +27,6 @@ import csv
 # Imports for .env file
 import os
 import sys
-from dotenv import load_dotenv
-from pathlib import Path
 
 # Imports for Gemini
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
@@ -407,7 +405,7 @@ def figure_out_code(team_code_mapping, player_code_mapping, user_prompt):
 
 	assert type(team_code_mapping) == dict and type(player_code_mapping) == dict, 'entered parameters are not of type dict'
 
-	load_dotenv(dotenv_path=Path(__file__).parent.parent.parent.parent / '.env')
+	# load_dotenv(dotenv_path=Path(__file__).parent.parent.parent.parent / '.env')
 
 	API_KEY = str(os.getenv("API_KEY")).strip()
 
@@ -1000,7 +998,7 @@ def pretty_print(raw_information):
 	This is a pretty_printer which takes in the raw information obtained via the API endpoints and prints it in a easy to ready manner
 	'''
 
-	load_dotenv(dotenv_path=Path(__file__).parent.parent.parent.parent / '.env')
+	# load_dotenv(dotenv_path=Path(__file__).parent.parent.parent.parent / '.env')
 
 	API_KEY = str(os.getenv("API_KEY")).strip()
 
