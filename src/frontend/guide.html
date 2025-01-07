@@ -111,4 +111,32 @@
         </div>
     </div>
 </body>
+
+<!-- This is all that I wanna write
+
+1. This is duxMLB - an extension that helps you elevate your baseball experience!
+
+This is a techincal implementation guide 
+
+1. Implementing the panel
+
+Part A - Saving the video live statcast data
+- Using query selector in javascript to find the "video" element in the youtube video
+- Created a rolloing buffer that stores 5 seconds worth of video data as an image/webp format (stores individual frames)
+- When the user asks for any statcast data, we send this to the backend
+
+Part B - Processing for statcast data
+
+<Leave this blank for now, still under development>
+
+Part A.a - LLM
+- There is gemini running the backend of the panel, which is used to parse the input by the user
+- If the user asks for statcast data, it queries the buffer and sends it to the backend
+- Else if the user is asking for general stuff, then it normally talks and explains baseball stuff
+
+Part A.b - API querying
+- If the user asks for a baseball player, or a certain team or the MLB schedule, then this part is triggered
+- Here the LLM queries the APIs provided by the organisers, and pulls from it the required metrics and displays that to the user
+-
+ -->
 </html>
