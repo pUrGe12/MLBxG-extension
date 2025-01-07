@@ -351,7 +351,7 @@ except IndexError:
 	pass
 
 player_code_mapping = {}						# We'll pass this directly to the LLM
-file_path = r"/opt/render/project/src/src/backend/API_querying/query.py"					# using abs paths
+file_path = r"/opt/render/project/src/src/backend/API_querying/razzball.csv"					# using abs paths
 
 with open(file_path, mode='r', encoding='utf-8') as fp:
 	csv_reader = csv.DictReader(fp)
