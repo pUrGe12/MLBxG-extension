@@ -6,9 +6,6 @@ import sys
 
 import requests             # Making post requests to the getBuffer method
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))) # adding the root directory to path
-# This should be done before any relative imports
-
 # Imports for API querying 
 from API_querying.query import call_API, pretty_print, figure_out_code
 from API_querying.query import team_code_mapping, player_code_mapping
@@ -39,6 +36,7 @@ from flask_cors import CORS
 import os
 import sys
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))) # adding the root directory to path
 from prompts import statPrompt
 
 from dotenv import load_dotenv
@@ -81,10 +79,6 @@ def load_models():
     scaler = joblib.load('../prediction/models/scaler.joblib')
     
     return encoder, scaler
-
-
-global encoder, scaler
-encoder, scaler = load_models()             # Load the encoder and the scaler using the above defined function
 
 
 def process_new_hit(new_hit_data, encoder, scaler):
@@ -163,6 +157,10 @@ def GPT_response(top_similar_hits, additional_params):
     except Exception as e:
         print(f"Error generating response: {e}")
         return 'Try again'
+
+
+global encoder, scaler
+encoder, scaler = load_models()             # Load the encoder and the scaler using the above defined function
 
 
 app = Flask(__name__)
@@ -291,5 +289,5 @@ def user_stat():
 
 # Trying to host this on render
 
-# if __name__ == "__main__":
-#     app.run(host="127.0.0.1", port=5000, debug=True)
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=5000, debug=True)
