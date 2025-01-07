@@ -77,8 +77,8 @@ def load_models():
         return: instances of the encoder and the scaler model.
     '''
 
-    encoder = load_model('../prediction/models/encoder_model.h5')
-    scaler = joblib.load('../prediction/models/scaler.joblib')
+    encoder = load_model('/opt/render/project/src/src/prediction/models/encoder_model.h5')
+    scaler = joblib.load('/opt/render/project/src/src/prediction/models/scaler.joblib')
     
     return encoder, scaler
 
