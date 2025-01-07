@@ -6,7 +6,7 @@ pinecone[grpc]
 joblib
 
 opencv-python-headless
-numpy
+numpy==1.25.2
 deepsort
 pandas
 gunicorn
