@@ -81,10 +81,6 @@ def load_models():
     return encoder, scaler
 
 
-global encoder, scaler
-encoder, scaler = load_models()             # Load the encoder and the scaler using the above defined function
-
-
 def process_new_hit(new_hit_data, encoder, scaler):
     """
         This function takes in the players stats and generates embeddings using the trained models
@@ -161,6 +157,10 @@ def GPT_response(top_similar_hits, additional_params):
     except Exception as e:
         print(f"Error generating response: {e}")
         return 'Try again'
+
+
+global encoder, scaler
+encoder, scaler = load_models()             # Load the encoder and the scaler using the above defined function
 
 
 app = Flask(__name__)
