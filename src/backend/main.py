@@ -6,7 +6,7 @@ import sys
 
 import requests             # Making post requests to the getBuffer method
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))) # adding the root directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # adding the root directory to path
 # This should be done before any relative imports
 
 # Imports for API querying 

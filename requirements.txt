@@ -8,3 +8,4 @@ gunicorn
 Flask-Cors
 flask
 google.generativeai
+beautifulsoup4
