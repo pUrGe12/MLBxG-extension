@@ -14,7 +14,7 @@ document.getElementById('stats-form').addEventListener('submit', async (e) => {
     responseDiv.innerHTML = "Generating prediction!...";
 
     try {
-        const response = await fetch('http://127.0.0.1:5001/user-stat/', {
+        const response = await fetch('http://127.0.0.1:5000/user-stat/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -59,8 +59,8 @@ def load_models():
         return: instances of the encoder and the scaler model.
     '''
 
-    encoder = load_model('../prediction/models/encoder_model.h5')
-    scaler = joblib.load('../prediction/models/scaler.joblib')
+    encoder = load_model('../../prediction/models/encoder_model.h5')
+    scaler = joblib.load('../../prediction/models/scaler.joblib')
     
     return encoder, scaler
 
@@ -117,11 +117,13 @@ def store_similar_hits(results):
 # Model to wrap things and output final answer
 # ---------------------------------------------------------------------------
 
-def GPT_response(top_similar_hits, additional_params):
+def GPT_response(top_similar_hits, additional_params, user_input):
     prompt = str(statPrompt[0]) + f"""
                                 These are the top similar homeruns in MLB: {top_similar_hits}
                                 These are the additional user stats: {additional_params}
-        """                         
+
+                                This is the user's input: {user_input}
+        """                     
     
     try:
         output = ''
@@ -151,7 +153,7 @@ CORS(app)  # Enable CORS for all routes
 
 @app.route('/user-stat/', methods=['POST'])
 def process_input():
-    user_input = request.json.get('input')  # Receive input from the panel
+    user_input = request.json.get('input').strip()  # Receive input from the panel
 
     print(user_input)
 
@@ -184,7 +186,7 @@ def process_input():
 
         print(top_similar_hits)
 
-        processed_output = GPT_response(top_similar_hits, additional_params.get('AdditionalParams'))                    # Both additional params and extractor dict are dictionaries.
+        processed_output = GPT_response(top_similar_hits, additional_params.get('AdditionalParams'), user_input)                    # Both additional params and extractor dict are dictionaries.
 
         print(processed_output)
 
@@ -193,7 +195,7 @@ def process_input():
             })
 
     except Exception as e:
-        incomplete_text = extractor(user_input)
+        incomplete_text = extractor(user_input.strip())
 
         print(incomplete_text)
         print('here in exception', e)
@@ -210,4 +212,4 @@ def process_input():
             })
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5001, debug=True)
+    app.run(host="127.0.0.1", port=5000, debug=True)    # Note if you're running this standalone then you must change this to 5001
