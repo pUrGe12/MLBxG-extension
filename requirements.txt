@@ -4,7 +4,7 @@ opencv-python
 numpy
 deepsort
 pandas
-
+gunicorn
 Flask-Cors
 flask
 google.generativeai
