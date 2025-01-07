@@ -351,7 +351,7 @@ except IndexError:
 	pass
 
 player_code_mapping = {}						# We'll pass this directly to the LLM
-file_path = r"razzball.csv"
+file_path = r"./razzball.csv"
 
 with open(file_path, mode='r', encoding='utf-8') as fp:
 	csv_reader = csv.DictReader(fp)
