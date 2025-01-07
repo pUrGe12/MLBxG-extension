@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MLB Future Predictor - Guide</title>
+    <title>duxMLB - Technical Implementation Guide</title>
     <style>
         * {
             margin: 0;
@@ -57,6 +57,7 @@
         .main-content {
             flex: 1;
             padding: 40px;
+            overflow-y: auto;
         }
         .guide-section {
             background-color: white;
@@ -64,11 +65,20 @@
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.08);
             max-width: 800px;
+            margin-bottom: 30px;
         }
         .guide-section h2 {
             color: #2c3e50;
             margin-bottom: 20px;
             font-size: 1.8em;
+            font-weight: 600;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .guide-section h3 {
+            color: #2c3e50;
+            margin: 25px 0 15px;
+            font-size: 1.4em;
             font-weight: 600;
         }
         .guide-section p {
@@ -80,6 +90,7 @@
         .guide-section ul {
             margin-left: 20px;
             color: #34495e;
+            margin-bottom: 25px;
         }
         .guide-section li {
             margin-bottom: 15px;
@@ -90,53 +101,92 @@
             color: #2c3e50;
             font-weight: 600;
         }
+        .feature-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #3498db;
+        }
+        .status-dev {
+            background-color: #fdf2f8;
+            color: #db2777;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <h1>MLB Future Predictor</h1>
-        <a href="options.html">Predict your MLB future now!</a>
-        <a href="guide.html" class="active">How we work (a guide)</a>
+        <h1>duxMLB Extension</h1>
+        <a href="options.html">Predict your MLB future</a>
+        <a href="guide.html" class="active">Technical Guide</a>
     </div>
     <div class="main-content">
         <div class="guide-section">
-            <h2>Technical Implementation Guide</h2>
-            <p>This MLB Future Predictor extension uses a sophisticated analysis system to evaluate player statistics and predict future performance. Here's how it works:</p>
-            <ul>
-                <li><strong>User Interface:</strong> Built with pure HTML, CSS, and JavaScript for maximum compatibility and ease of maintenance.</li>
-                <li><strong>Backend Processing:</strong> Utilizes a Flask server running locally on port 5000 to process your statistics.</li>
-                <li><strong>Data Analysis:</strong> Implements advanced statistical analysis to generate accurate predictions based on historical MLB data.</li>
-                <li><strong>Security:</strong> All data is processed locally on your machine, ensuring your information remains private and secure.</li>
-            </ul>
+            <h2>Welcome to duxMLB</h2>
+            <p>Elevate your baseball experience with our comprehensive extension! This technical implementation guide will walk you through the key components and features of duxMLB.</p>
+        </div>
+
+        <div class="guide-section">
+            <h2>Panel Implementation</h2>
+            
+            <h3>Video Data Processing</h3>
+            <div class="feature-box">
+                <ul>
+                    <li><strong>Video Element Detection:</strong> Implements JavaScript query selectors to locate and interact with video elements on YouTube.</li>
+                    <li><strong>Rolling Buffer System:</strong> Maintains a 5-second buffer of video data, storing individual frames in image/webp format for real-time analysis.</li>
+                    <li><strong>Statcast Integration:</strong> On-demand processing of buffered data for detailed statistical analysis.</li>
+                </ul>
+            </div>
+
+            <h3>Statcast Data Processing</h3>
+            <div class="feature-box">
+                <p><em><span class="status-dev">Under Development</span></em></p>
+            </div>
+
+            <h3>LLM Integration</h3>
+            <div class="feature-box">
+                <ul>
+                    <li><strong>Gemini Backend:</strong> Powers intelligent user input parsing and natural language processing.</li>
+                    <li><strong>Dual-Mode Operation:</strong> Handles both statcast data queries and general baseball inquiries.</li>
+                    <li><strong>Buffer Integration:</strong> Seamlessly interfaces with the video buffer for real-time data analysis.</li>
+                </ul>
+            </div>
+
+            <h3>API Integration</h3>
+            <div class="feature-box">
+                <ul>
+                    <li><strong>Advanced Querying:</strong> Processes requests for player stats, team information, and MLB schedules.</li>
+                    <li><strong>LLM-Powered Analysis:</strong> Utilizes machine learning to extract and present relevant metrics from API data.</li>
+                    <li><strong>Comprehensive Coverage:</strong> Integrates with official MLB data sources for accurate and up-to-date information.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="guide-section">
+            <h2>Options Implementation</h2>
+
+            <h3>MLB Future Predictor</h3>
+            <div class="feature-box">
+                <ul>
+                    <li><strong>Advanced Database:</strong> Utilizes Pinecone database to store comprehensive MLB player statistics including exit velocity, launch angle, and hit distance.</li>
+                    <li><strong>Embedding Model:</strong> Implements sophisticated player comparison algorithms using embedded statistical analysis.</li>
+                    <li><strong>Personalized Analysis:</strong> Compares user stats with MLB player database to generate targeted improvement suggestions.</li>
+                </ul>
+            </div>
+
+            <h3>Guide Interface</h3>
+            <div class="feature-box">
+                <ul>
+                    <li><strong>User-Friendly Design:</strong> Clean, intuitive interface built with modern HTML5 and CSS3.</li>
+                    <li><strong>Responsive Layout:</strong> Adapts seamlessly to different screen sizes and devices.</li>
+                    <li><strong>Interactive Elements:</strong> Enhanced user experience with smooth transitions and visual feedback.</li>
+                </ul>
+            </div>
         </div>
     </div>
 </body>
-
-<!-- This is all that I wanna write
-
-1. This is duxMLB - an extension that helps you elevate your baseball experience!
-
-This is a techincal implementation guide 
-
-1. Implementing the panel
-
-Part A - Saving the video live statcast data
-- Using query selector in javascript to find the "video" element in the youtube video
-- Created a rolloing buffer that stores 5 seconds worth of video data as an image/webp format (stores individual frames)
-- When the user asks for any statcast data, we send this to the backend
-
-Part B - Processing for statcast data
-
-<Leave this blank for now, still under development>
-
-Part A.a - LLM
-- There is gemini running the backend of the panel, which is used to parse the input by the user
-- If the user asks for statcast data, it queries the buffer and sends it to the backend
-- Else if the user is asking for general stuff, then it normally talks and explains baseball stuff
-
-Part A.b - API querying
-- If the user asks for a baseball player, or a certain team or the MLB schedule, then this part is triggered
-- Here the LLM queries the APIs provided by the organisers, and pulls from it the required metrics and displays that to the user
--
- -->
 </html>
