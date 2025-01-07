@@ -6,7 +6,7 @@ import os
 import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__))) # adding the root directory to path
-from prompts import extractionPrompt
+from prompts import extractionPrompt                        # Might have to change this if running locally
 
 # from dotenv import load_dotenv
 from pathlib import Path

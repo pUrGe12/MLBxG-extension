@@ -1,5 +1,10 @@
 torch
 torchvision
+tensorflow
+pinecone
+pinecone[grpc]
+joblib
+
 opencv-python-headless
 numpy
 deepsort
