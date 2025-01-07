@@ -19,7 +19,7 @@ Developing an extension that can read your screen and give you live data updates
 > What can you do with duxMLB?
 
 **duxMLB** offers two features
-1. Panel page: For when you are watching a YouTube match.
+1. Panel page: For when you are watching a YouTube match. (can be later extended to others as well)
 2. Options page: For predicting your MLB future by comparing you to top players!
 
 There is also a `guide` page which explains how the site was made and contains all the techincal explanations.
@@ -75,6 +75,7 @@ Have created seperate ports for the panel and the options page because it will b
 
 Completed:
 
+- [ ] Complete the `guide` page today
 - [x] API setup and querying through the panel
 - [x] Pinecone pipeline and prediction model
 - [x] Writing README for instructions regarding training YOLOv5
