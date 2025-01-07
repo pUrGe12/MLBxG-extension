@@ -4,7 +4,6 @@ opencv-python
 numpy
 deepsort
 pandas
-dotenv
 
 Flask-Cors
 flask
