@@ -8,7 +8,7 @@ I have directly used the weights given by them.
 
 This is running a single image detection using that model
 
-![image](./outputs/baseball_img_3.png)
+![image](./outputs/baseball_img_3.jpg)
 
 
 ## Tracking idea
