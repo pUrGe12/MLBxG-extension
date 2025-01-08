@@ -28,3 +28,8 @@ This is because the video feed I'll be using is around 4 seconds long. The ball 
 So, in that list, we also need tomaintain a frame count, and a live time count. That is, assuming 30fps, if I have 4 seconds of data it becomes 120 frames in total. Now assuming in we get the baseball detections in frames 2, 4, 10, 20, then 30 to 60 continously and then 65 and fianlly 118, this means the ball was continously travelling for the frames 30 to 60. 
 
 This means 30 frames which imples 1 second (cause 30 frames per second). Hence the ball travelled for 30 seconds and the pitch length is say 60 feet += 10 feet (we'll give a tolerance because the baseball might stop being detected when close to the batter due to same color) then we get an estimate for speed as being in between 70 ft/s to 50 ft/s.
+
+
+## Note
+
+If you want to use the v4 model, the weights are in the desktop (cound't push that in github cause it was too big! Will prolly compress and use.)
