@@ -105,15 +105,27 @@ Broad goals
 
 # Installing
 
-Create a virtual environment otherwise there might be version conflicts.
+I don't have a CWS developer account (cause I don't have 5 dollars), and hence I couldn't publish this on the webstore. So, I'll give the instructions to run this extension locally on your machine.
 
-    python3 -m venv duxMLB
-    source duxMLB/bin/activate
+1. Clone the repository using
 
-Then install the dependencies using
+       git clone https://github.com/pUrGe12/MLBxG-extension
 
-    pip install -r requirements.txt
+2. Now open chrome extensions using
 
+       chrome://extensions
+
+3. Toggle the `developer mode` button (on the top right) and then click on `load unpacked`
+
+   ![Picture of developer mode button](./picture/Screenshot1.png)
+
+5. Select the `src` directory (inside the folder you cloned from github).
+
+6. Click on `details` and visit the `options` page. This has more functionalities that cater to the other problems mentioned in the problem statment (and some fun stuff too).
+    
+   ![Picture of options](./picture/Screenshot2.png)
+
+8. Now you're good to go!
 
 ---
 
