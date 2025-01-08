@@ -1,3 +1,5 @@
-# This is the second of some trained models
+# Using the pre-trained model on MLB data
 
-To streamline the process, I will seperate them into folders
+Found the cool github repo linked previously. Here I'll test that out and see if the models are any good. 
+
+I have directly used the weights given by them.
