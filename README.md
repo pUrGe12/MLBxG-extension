@@ -15,6 +15,13 @@ Test it locally again. Something seems wrong!
 
 </div>
 
+
+# More things
+
+- [ ] Integrating velocity finder with panel.py
+- [ ] Creating a exit-velocity finder using bat-tracking
+- [ ] An old video uploader and hence generating statcast for that (add this in options itself)
+
 Developing an extension that can read your screen and give you live data updates and tips on your favourite baseball games! (With permission)
 
 > [!IMPORTANT]
