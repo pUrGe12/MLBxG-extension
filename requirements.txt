@@ -5,6 +5,10 @@ pinecone
 pinecone[grpc]
 joblib
 
+ultralytics
+tqdm
+Werkzeug
+
 opencv-python-headless
 numpy==1.25.2
 deepsort

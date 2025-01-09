@@ -1,35 +1,24 @@
 const BASE_URL = 'https://mlbxg-extension-1.onrender.com';
 
-// Helper function to show response
-function showResponse(message) {
-    const responseSection = document.querySelector('.response-section');
-    const responseContent = document.querySelector('.response-content');
-    responseSection.style.display = 'block';
-    responseContent.innerHTML = marked.parse(message);
-    
-    // Scroll to response
-    responseSection.scrollIntoView({ behavior: 'smooth' });
-}
-
-// Helper function to show status messages
-function showStatus(statusDiv, message, isSuccess) {
-    statusDiv.textContent = message;
-    statusDiv.style.display = 'block';
-    statusDiv.className = `upload-status ${isSuccess ? 'success' : 'error'}`;
-}
-
 // Handle match name submission
 document.getElementById('name-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const matchName = document.getElementById('match-name').value;
+    const responseSection = document.querySelector('.response-section');
+    const responseContent = document.querySelector('.response-content');
     const statusDiv = document.getElementById('name-status');
     
     if (!matchName.trim()) {
-        showStatus(statusDiv, "Please enter a match name", false);
+        statusDiv.textContent = "Please enter a match name";
+        statusDiv.style.display = 'block';
+        statusDiv.className = 'upload-status error';
         return;
     }
 
-    showStatus(statusDiv, "Processing match name...", true);
+    // Show processing status
+    statusDiv.textContent = "Processing match name...";
+    statusDiv.style.display = 'block';
+    statusDiv.className = 'upload-status success';
     
     try {
         const response = await fetch(`${BASE_URL}/classics-text/`, {
@@ -39,21 +28,27 @@ document.getElementById('name-form').addEventListener('submit', async (e) => {
             },
             body: JSON.stringify({ input: matchName }),
         });
-
+        
         if (!response.ok) {
             throw new Error(`Server error: ${response.status}`);
         }
-
-        const data = await response.json();
-        showStatus(statusDiv, "Match name submitted successfully!", true);
         
-        // Show the response from the backend
-        if (data.response) {
-            showResponse(data.response);
-        }
+        const data = await response.json();
+        
+        // Show success status
+        statusDiv.textContent = "Match name submitted successfully!";
+        statusDiv.className = 'upload-status success';
+        
+        // Show response section and content
+        responseSection.style.display = 'block';
+        responseContent.innerHTML = marked.parse(data.response);
+        
+        // Scroll to response
+        responseSection.scrollIntoView({ behavior: 'smooth' });
     } catch (error) {
         console.error('Fetch error:', error);
-        showStatus(statusDiv, "Error connecting to server. Please try again.", false);
+        statusDiv.textContent = 'Error connecting to server. Please try again.';
+        statusDiv.className = 'upload-status error';
     }
 });
 
@@ -61,37 +56,49 @@ document.getElementById('name-form').addEventListener('submit', async (e) => {
 document.getElementById('video-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const videoFile = document.getElementById('match-video').files[0];
+    const responseSection = document.querySelector('.response-section');
+    const responseContent = document.querySelector('.response-content');
     const statusDiv = document.getElementById('video-status');
     
     if (!videoFile) {
-        showStatus(statusDiv, "Please select a video file", false);
+        statusDiv.textContent = "Please select a video file";
+        statusDiv.style.display = 'block';
+        statusDiv.className = 'upload-status error';
         return;
     }
 
-    showStatus(statusDiv, "Uploading video...", true);
+    // Show uploading status
+    statusDiv.textContent = "Uploading video...";
+    statusDiv.style.display = 'block';
+    statusDiv.className = 'upload-status success';
     
     try {
         const formData = new FormData();
         formData.append('video', videoFile);
-
         const response = await fetch(`${BASE_URL}/classics-video/`, {
             method: 'POST',
-            body: formData,
+            body: formData
         });
-
+        
         if (!response.ok) {
             throw new Error(`Server error: ${response.status}`);
         }
-
-        const data = await response.json();
-        showStatus(statusDiv, "Video uploaded successfully!", true);
         
-        // Show the response from the backend
-        if (data.response) {
-            showResponse(data.response);
-        }
+        const data = await response.json();
+        
+        // Show success status
+        statusDiv.textContent = "Video uploaded successfully!";
+        statusDiv.className = 'upload-status success';
+        
+        // Show response section and content
+        responseSection.style.display = 'block';
+        responseContent.innerHTML = marked.parse(data.response);
+        
+        // Scroll to response
+        responseSection.scrollIntoView({ behavior: 'smooth' });
     } catch (error) {
         console.error('Fetch error:', error);
-        showStatus(statusDiv, "Error uploading video. Please try again.", false);
+        statusDiv.textContent = 'Error uploading video. Please try again.';
+        statusDiv.className = 'upload-status error';
     }
 });
