@@ -22,6 +22,11 @@ Test it locally again. Something seems wrong!
 - [ ] Creating a exit-velocity finder using bat-tracking
 - [ ] An old video uploader and hence generating statcast for that (add this in options itself)
 
+- [x] Update logic of speed calculation to fill in missing frames with averages (espectially closely missing ones)
+- [ ] Update logic to handle different camera angles.
+
+- [ ] Ensure proper readmes for all!
+
 Developing an extension that can read your screen and give you live data updates and tips on your favourite baseball games! (With permission)
 
 > [!IMPORTANT]
