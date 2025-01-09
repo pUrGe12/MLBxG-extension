@@ -1,3 +1,35 @@
+"""
+
+We will have to make some calibrations
+
+Assuming the pitch is exactly 60 feet long, and the average pitch speed is around 97mph (around 145ft/s). 
+For a video having an average fps of 30 fps (which is what seems to be the case).
+
+Time taken to cover the pitch by the ball on average is 60/145 = 0.413 seconds. This means a total number of frames being 30*0.413 = 12 to 13.
+
+So, if you're detecting the baseball in around 12 to 13 frames then you're good to go. This means the threshold should be around 10 minimum.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Added logic:
+
+- If there is a baseball being detected in frame x, then not in x+1, then again in x+2, then we can consider the position of the ball in the x+1th frame 
+as the average of the two
+
+- This means we can add that in our valid sequence! (thus getting longer and more accurate results.)
+
+
+This we'll do using interpolated fields
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Added logic:
+
+Taking camera angle into account!
+
+"""
+
+
 from ultralytics import YOLO
 
 import requests
@@ -195,6 +227,7 @@ class BallDetection:
     confidence: float
     class_value: float
     track_id: int = None
+    interpolated: bool = False  # New field to mark interpolated detections
 
 class BaseballTracker:
     def __init__(
@@ -203,18 +236,56 @@ class BaseballTracker:
         min_confidence: float = 0.5,
         max_displacement: float = 100,  # max pixels between frames
         min_sequence_length: int = 7,
-        pitch_distance_range: Tuple[float, float] = (50, 70)  # feet
+        pitch_distance_range: Tuple[float, float] = (50, 70),  # feet
+        max_interpolation_gap: int = 2  # maximum frames to interpolate
     ):
         self.model = model
         self.min_confidence = min_confidence
         self.max_displacement = max_displacement
         self.min_sequence_length = min_sequence_length
         self.pitch_distance_range = pitch_distance_range
+        self.max_interpolation_gap = max_interpolation_gap
         
     def _get_box_center(self, box_coords: np.ndarray) -> Tuple[float, float]:
         """Calculate center coordinates from XYXY box coordinates."""
         x1, y1, x2, y2 = box_coords[0]
         return ((x1 + x2) / 2, (y1 + y2) / 2)
+    
+    def _interpolate_detection(
+        self, 
+        prev_detection: BallDetection, 
+        next_detection: BallDetection, 
+        frame_number: int,
+        fps: float
+    ) -> BallDetection:
+        """Create an interpolated detection between two valid detections."""
+        # Calculate the fraction of the way between prev and next detection
+        total_frames = next_detection.frame_number - prev_detection.frame_number
+        frames_from_prev = frame_number - prev_detection.frame_number
+        fraction = frames_from_prev / total_frames
+        
+        # Interpolate box coordinates
+        prev_coords = prev_detection.box_coords[0]
+        next_coords = next_detection.box_coords[0]
+        interpolated_coords = prev_coords + (next_coords - prev_coords) * fraction
+        
+        # Create interpolated detection
+        return BallDetection(
+            frame_number=frame_number,
+            timestamp=frame_number / fps,
+            box_coords=np.array([interpolated_coords]),
+            confidence=(prev_detection.confidence + next_detection.confidence) / 2,
+            class_value=prev_detection.class_value,
+            track_id=prev_detection.track_id,
+            interpolated=True
+        )
+    
+    def _organize_detections_by_frame(
+        self, 
+        detections: List[BallDetection]
+    ) -> Dict[int, BallDetection]:
+        """Organize detections into a dictionary keyed by frame number."""
+        return {d.frame_number: d for d in detections}
     
     def process_video(self, video_path: str) -> Dict:
         """Process video and return ball tracking data and speed estimates."""
@@ -256,6 +327,18 @@ class BaseballTracker:
             
         cap.release()
         
+        # Organize detections by frame number
+        detections_by_frame = self._organize_detections_by_frame(all_detections)
+        
+        # Find and interpolate gaps
+        interpolated_detections = self._interpolate_gaps(detections_by_frame, frame_count, fps)
+        
+        # Combine original and interpolated detections
+        all_detections = sorted(
+            interpolated_detections.values(),
+            key=lambda x: x.frame_number
+        )
+        
         # Find continuous sequences
         sequences = self._find_continuous_sequences(all_detections)
         
@@ -269,6 +352,54 @@ class BaseballTracker:
             "speed_estimates": speed_estimates,
             "all_detections": all_detections
         }
+    
+    def _interpolate_gaps(
+        self, 
+        detections_by_frame: Dict[int, BallDetection],
+        frame_count: int,
+        fps: float
+    ) -> Dict[int, BallDetection]:
+        """Interpolate gaps in detection sequences."""
+        interpolated_detections = detections_by_frame.copy()
+        
+        # Sort frame numbers
+        frame_numbers = sorted(detections_by_frame.keys())
+        
+        if not frame_numbers:
+            return interpolated_detections
+            
+        # Iterate through frames to find gaps
+        for i in range(len(frame_numbers) - 1):
+            current_frame = frame_numbers[i]
+            next_frame = frame_numbers[i + 1]
+            frame_gap = next_frame - current_frame
+            
+            # If there's a gap that's within our interpolation limit
+            if 1 < frame_gap <= self.max_interpolation_gap:
+                prev_detection = detections_by_frame[current_frame]
+                next_detection = detections_by_frame[next_frame]
+                
+                # Check if the displacement between detections is reasonable
+                prev_center = self._get_box_center(prev_detection.box_coords)
+                next_center = self._get_box_center(next_detection.box_coords)
+                displacement = np.sqrt(
+                    (next_center[0] - prev_center[0])**2 + 
+                    (next_center[1] - prev_center[1])**2
+                )
+                
+                # Only interpolate if the total displacement is reasonable
+                if displacement <= self.max_displacement * frame_gap:
+                    # Interpolate for each missing frame
+                    for missing_frame in range(current_frame + 1, next_frame):
+                        interpolated_detection = self._interpolate_detection(
+                            prev_detection,
+                            next_detection,
+                            missing_frame,
+                            fps
+                        )
+                        interpolated_detections[missing_frame] = interpolated_detection
+        
+        return interpolated_detections
     
     def _find_continuous_sequences(
         self, 
@@ -334,8 +465,12 @@ class BaseballTracker:
             min_speed = (self.pitch_distance_range[0] / time_duration)  # ft/s
             max_speed = (self.pitch_distance_range[1] / time_duration)  # ft/s
             
+            # Count interpolated frames
+            interpolated_frames = sum(1 for d in sequence if d.interpolated)
+            
             speed_estimates.append({
                 "sequence_length": len(sequence),
+                "interpolated_frames": interpolated_frames,
                 "time_duration": time_duration,
                 "pixel_displacement": pixel_displacement,
                 "min_speed_ft_per_sec": min_speed,
@@ -351,7 +486,7 @@ class BaseballTracker:
 
 # Example usage
 if __name__ == "__main__":
-    SOURCE_VIDEO_PATH = "./input/baseball.mp4"
+    SOURCE_VIDEO_PATH = "./input/baseball_3.mp4"
     
     # Load your model
     load_tools = LoadTools()
@@ -361,10 +496,10 @@ if __name__ == "__main__":
     # Initialize tracker with your model
     tracker = BaseballTracker(
         model=model,
-        min_confidence=0.3,         # 0.3 confidence works good enough, gives realistic predictions
+        min_confidence=0.2,         # 0.2 confidence works good enough, because its only going to detect baseballs and there are rarely anything else. 
         max_displacement=100,       # adjust based on your video resolution
-        min_sequence_length=7,
-        pitch_distance_range=(50, 70)  # feet
+        min_sequence_length=10,
+        pitch_distance_range=(55, 65)  # feet
     )
     
     # Process video
@@ -381,3 +516,4 @@ if __name__ == "__main__":
         print(f"Average confidence: {speed_est['average_confidence']:.3f}")
         print(f"Estimated speed: {speed_est['min_speed_mph']:.1f} to "
               f"{speed_est['max_speed_mph']:.1f} mph")
+        print(f"Pixel displacement: {speed_est['pixel_displacement']}")

@@ -794,8 +794,7 @@ def classics_video_processing():
 Frames: {speed_est['start_frame']} to {speed_est['end_frame']}
 Duration: {speed_est['time_duration']:.2f} seconds
 Average confidence: {speed_est['average_confidence']:.3f}
-Estimated speed: {speed_est['min_speed_mph']:.1f}""" + f""" to {speed_est['max_speed_mph']:.1f} mph
-            """
+Estimated speed: {speed_est['min_speed_mph']:.1f}""" + f""" to {speed_est['max_speed_mph']:.1f} mph"""
 
         return jsonify({                                                            # Also need to return uploaded message
             'message': 'Video analysed successfully, now running plan',
