@@ -5,6 +5,7 @@ pinecone
 pinecone[grpc]
 joblib
 
+moviepy
 ultralytics
 tqdm
 Werkzeug
