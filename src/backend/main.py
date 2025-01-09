@@ -1,9 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-
-import os
-import sys
+from moviepy.editor import VideoFileClip
 
 import requests             # Making post requests to the getBuffer method
 
@@ -521,6 +519,11 @@ class BaseballTracker:
         return speed_estimates
 
 
+def convert_webm_to_mp4(input_path, output_path):
+    clip = VideoFileClip(input_path)
+    clip.write_videofile(output_path, codec="libx264")
+    clip.close()
+
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #                                                                                       API endpoints
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -587,18 +590,78 @@ def process_input():
 
         # Make a post request to the extension with the action getBuffer. (I am worried about the syntax here)
         response = requests.post(
-            f"http://127.0.0.1:5000/extensions/{chrome_extension_id}/getBuffer",
+            f"http://127.0.0.1:5000/extensions/{chrome_extension_id}/getBuffer",                    # Hope we're actually getting the buffer
             json={'action': "getBuffer"}
         )
         if response.status_code == 200:
             video_data = response.content
-            with open("received_video.webm", "wb") as f:
-                f.write(video_data)
+            with open("/opt/render/project/src/src/backend/input_files/received_video.webm", "wb") as fp:               # Saving this in the input files directory (hopefully this works)
+                fp.write(video_data)
 
-            # now we gotta process this
-            return jsonify({"response": "Buffer received and saved"}), 200
-        else:
-            return jsonify({"error": "Failed to get buffer"}), 500
+            # Convert webm to mp4 and save it
+            convert_webm_to_mp4("/opt/render/project/src/src/backend/input_files/received_video.webm", "/opt/render/project/src/src/backend/input_files/converted_input.mp4")
+            
+            VideoPath = "/opt/render/project/src/src/backend/input_files/converted_input.mp4"
+
+
+            # -------------------------------------------------------------------------------------------
+            #               Now we need a logic to see if they're asking for speed or what
+            # -------------------------------------------------------------------------------------------
+
+            what_is_needed = check_statcast(user_input)
+
+            if 'baseballspeed' in what_is_needed.strip().lower():
+                
+                # now we gotta process this, assuming we get the data as a mp4 data
+                load_tools = LoadTools()
+                model_weights = load_tools.load_model(model_alias='ball_trackingv4')
+                model = YOLO(model_weights)
+
+                tracker = BaseballTracker(
+                model=model,
+                min_confidence=0.3,         # 0.3 confidence works good enough, gives realistic predictions
+                max_displacement=100,       # adjust based on your video resolution
+                min_sequence_length=7,
+                pitch_distance_range=(50, 70)  # feet
+                )
+            
+                # Process video
+                results = tracker.process_video(VideoPath)                                  # This should probably work
+                
+                # Printing and saving results
+                output = """"""
+
+                print(f"\nProcessed {results['total_frames']} frames at {results['fps']} FPS")
+                print(f"Found {len(results['sequences'])} valid ball sequences")
+                
+                output += f"\nProcessed {results['total_frames']} frames at {results['fps']} FPS" + f"\n Found {len(results['sequences'])} valid ball sequences"
+
+                for i, speed_est in enumerate(results['speed_estimates'], 1):
+                    print(f"\nSequence {i}:")
+                    print(f"Frames: {speed_est['start_frame']} to {speed_est['end_frame']}")
+                    print(f"Duration: {speed_est['time_duration']:.2f} seconds")
+                    print(f"Average confidence: {speed_est['average_confidence']:.3f}")
+                    print(f"Estimated speed: {speed_est['min_speed_mph']:.1f} to "
+                          f"{speed_est['max_speed_mph']:.1f} mph")
+
+                    output += f"""
+        \nSequence {i}:
+        Frames: {speed_est['start_frame']} to {speed_est['end_frame']}
+        Duration: {speed_est['time_duration']:.2f} seconds
+        Average confidence: {speed_est['average_confidence']:.3f}
+        Estimated speed: {speed_est['min_speed_mph']:.1f}""" + f""" to {speed_est['max_speed_mph']:.1f} mph
+                    """
+
+                return jsonify({"response": output}), 200
+            
+            elif 'exitvelocity' in what_is_needed.strip().lower():
+                # This now requires tracking the bat.
+                pass
+
+            else:
+                return jsonify({"error": "Failed to get buffer"}), 500
+
+
 
 
 @app.route('/user-stat/', methods=['POST'])
@@ -731,7 +794,7 @@ def classics_video_processing():
 Frames: {speed_est['start_frame']} to {speed_est['end_frame']}
 Duration: {speed_est['time_duration']:.2f} seconds
 Average confidence: {speed_est['average_confidence']:.3f}
-Estimated speed: {speed_est['min_speed_mph']:.1f""" + f""" to {speed_est['max_speed_mph']:.1f} mph
+Estimated speed: {speed_est['min_speed_mph']:.1f}""" + f""" to {speed_est['max_speed_mph']:.1f} mph
             """
 
         return jsonify({                                                            # Also need to return uploaded message
