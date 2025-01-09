@@ -26,7 +26,6 @@ Test it locally again. Something seems wrong!
 - [ ] Update logic to handle different camera angles.
 
 - [ ] Ensure proper readmes for all!
-
 Developing an extension that can read your screen and give you live data updates and tips on your favourite baseball games! (With permission)
 
 > [!IMPORTANT]
