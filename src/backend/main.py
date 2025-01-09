@@ -1,6 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
+import os
+import sys
+
 from moviepy.editor import VideoFileClip
 
 import requests             # Making post requests to the getBuffer method
@@ -34,9 +37,6 @@ import google.generativeai as genai
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-
-import os
-import sys
 
 from prompts import statPrompt
 
