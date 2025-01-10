@@ -47,7 +47,7 @@ load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / '.env')
 
 API_KEY = str(os.getenv("API_KEY")).strip()
 
-print(API_KEY)
+# print(API_KEY)
 pinecone_api_key = str(os.getenv("pinecone_api_key")).strip()
 
 genai.configure(api_key=API_KEY)
@@ -813,13 +813,20 @@ Estimated speed: {speed_est['min_speed_mph']:.1f}""" + f""" to {speed_est['max_s
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/classics-text', methods=['POST'])
+@app.route('/classics-text/', methods=['POST'])
 def classics_text_processing():
     '''
     Here we will have to first scrape the video! Then apply the same concept as above
     '''
+    user_input = request.json.get('input')  # Receive input from the panel
+    print(user_input)
 
-    pass
+    if not user_input:
+        return jsonify({"error": "No input provided"}), 400
+
+    return jsonify({
+        'message': f"you entered {user_input}"
+        })
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)

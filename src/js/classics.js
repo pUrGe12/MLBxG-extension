@@ -42,7 +42,7 @@ document.getElementById('name-form').addEventListener('submit', async (e) => {
         
         // Show response section and content
         responseSection.style.display = 'block';
-        responseContent.innerHTML = marked.parse(data.response);
+        responseContent.innerHTML = marked.parse(data.message);
         
         // Scroll to response
         responseSection.scrollIntoView({ behavior: 'smooth' });
