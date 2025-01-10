@@ -46,6 +46,8 @@ from pathlib import Path
 load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / '.env')
 
 API_KEY = str(os.getenv("API_KEY")).strip()
+
+print(API_KEY)
 pinecone_api_key = str(os.getenv("pinecone_api_key")).strip()
 
 genai.configure(api_key=API_KEY)
