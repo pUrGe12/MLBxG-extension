@@ -1,4 +1,4 @@
-SOURCE_VIDEO_PATH = "./input/baseball_3.mp4"
+SOURCE_VIDEO_PATH = "./input/baseball.mp4"
 
 from ultralytics import YOLO
 

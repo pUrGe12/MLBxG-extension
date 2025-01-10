@@ -40,10 +40,10 @@ from flask_cors import CORS
 
 from prompts import statPrompt
 
-# from dotenv import load_dotenv                # Don't need to do this if we've specified .env contents in render
+from dotenv import load_dotenv                # Don't need to do this if we've specified .env contents in render
 from pathlib import Path
 
-# load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / '.env')
+load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / '.env')
 
 API_KEY = str(os.getenv("API_KEY")).strip()
 pinecone_api_key = str(os.getenv("pinecone_api_key")).strip()
@@ -76,8 +76,8 @@ def load_models():
         return: instances of the encoder and the scaler model.
     '''
 
-    encoder = load_model('/opt/render/project/src/src/prediction/models/encoder_model.h5')
-    scaler = joblib.load('/opt/render/project/src/src/prediction/models/scaler.joblib')
+    encoder = load_model('../prediction/models/encoder_model.h5')
+    scaler = joblib.load('../prediction/models/scaler.joblib')
     
     return encoder, scaler
 
@@ -208,12 +208,12 @@ class LoadTools:
         self.chunk_size = 1024
         self.BDL_MODEL_API = "https://balldatalab.com/api/models/"
         self.BDL_DATASET_API = "https://balldatalab.com/api/datasets/"
-        self.yolo_model_aliases = {
+        self.yolo_model_aliases = {                                                 # We're only using ball tracking and v4 for now
             'phc_detector': 'models/YOLO/pitcher_hitter_catcher_detector/model_weights/pitcher_hitter_catcher_detector_v4.txt',
             'bat_tracking': 'models/YOLO/bat_tracking/model_weights/bat_tracking.txt',
-            'ball_tracking': './ball_tracking/ball_tracking.txt',
+            'ball_tracking': '../statcast_detection_tracking/model2/ball_tracking/ball_tracking.txt',
             'glove_tracking': 'models/YOLO/glove_tracking/model_weights/glove_tracking.txt',
-            'ball_trackingv4': './ball_tracking/ball_trackingv4.txt'
+            'ball_trackingv4': '../statcast_detection_tracking/model2/ball_tracking/ball_trackingv4.txt'
         }
         self.florence_model_aliases = {              # No need (maybe)
             'ball_tracking': 'models/FLORENCE2/ball_tracking/model_weights/florence_ball_tracking.txt',
@@ -595,13 +595,13 @@ def process_input():
         )
         if response.status_code == 200:
             video_data = response.content
-            with open("/opt/render/project/src/src/backend/input_files/received_video.webm", "wb") as fp:               # Saving this in the input files directory (hopefully this works)
+            with open("./input_files/received_video.webm", "wb") as fp:               # Saving this in the input files directory (hopefully this works)
                 fp.write(video_data)
 
             # Convert webm to mp4 and save it
-            convert_webm_to_mp4("/opt/render/project/src/src/backend/input_files/received_video.webm", "/opt/render/project/src/src/backend/input_files/converted_input.mp4")
+            convert_webm_to_mp4("./input_files/received_video.webm", "./input_files/converted_input.mp4")
             
-            VideoPath = "/opt/render/project/src/src/backend/input_files/converted_input.mp4"
+            VideoPath = "./input_files/converted_input.mp4"
 
 
             # -------------------------------------------------------------------------------------------
@@ -729,7 +729,7 @@ def user_stat():
 
 from werkzeug.utils import secure_filename                              # Adding this here cause not always requireds
 
-@app.route('/classics-video', methods=['POST'])
+@app.route('/classics-video/', methods=['POST'])
 def classics_video_processing():
     '''
     Video processing essentially means applying the yolo model and computing the statcast data.
@@ -752,11 +752,14 @@ def classics_video_processing():
         # Secure the filename and save the file
         filename = secure_filename(video_file.filename)
         
+        print(filename)
+
         # Ensure upload directory exists and saving it
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         video_file.save(file_path)
         
+        print('here')
         # Process the video
         load_tools = LoadTools()
         model_weights = load_tools.load_model(model_alias='ball_trackingv4')
@@ -769,7 +772,9 @@ def classics_video_processing():
         min_sequence_length=7,
         pitch_distance_range=(50, 70)  # feet
         )
-    
+        
+        SOURCE_VIDEO_PATH = f'/home/purge/Desktop/MLBxG-extension/src/backend/uploads/videos/{filename}'
+        print(SOURCE_VIDEO_PATH)
         # Process video
         results = tracker.process_video(SOURCE_VIDEO_PATH)
         
@@ -811,13 +816,12 @@ def classics_text_processing():
     '''
     Here we will have to first scrape the video! Then apply the same concept as above
     '''
+
     pass
 
-# Trying to host this on render
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=5000, debug=True)
 
 # if __name__ == "__main__":
-#     app.run(host="127.0.0.1", port=5000, debug=True)
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  # Render will provide PORT env variable
-    app.run(host="0.0.0.0", port=port)
+#     port = int(os.environ.get("PORT", 10000))  # Render will provide PORT env variable
+#     app.run(host="0.0.0.0", port=port)

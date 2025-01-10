@@ -1,4 +1,5 @@
-const BASE_URL = 'https://mlbxg-extension-1.onrender.com';
+// const BASE_URL = 'https://mlbxg-extension-1.onrender.com';
+const BASE_URL = 'http://127.0.0.1:5000';
 
 document.getElementById('stats-form').addEventListener('submit', async (e) => {
     e.preventDefault();

@@ -1,4 +1,5 @@
-const BASE_URL = 'https://mlbxg-extension-1.onrender.com';
+// const BASE_URL = 'https://mlbxg-extension-1.onrender.com';
+const BASE_URL = 'http://127.0.0.1:5000';
 
 // Handle match name submission
 document.getElementById('name-form').addEventListener('submit', async (e) => {
@@ -9,7 +10,7 @@ document.getElementById('name-form').addEventListener('submit', async (e) => {
     const statusDiv = document.getElementById('name-status');
     
     if (!matchName.trim()) {
-        statusDiv.textContent = "Please enter a match name";
+        statusDiv.textContent = "Please enter a match name";    
         statusDiv.style.display = 'block';
         statusDiv.className = 'upload-status error';
         return;
@@ -92,7 +93,7 @@ document.getElementById('video-form').addEventListener('submit', async (e) => {
         
         // Show response section and content
         responseSection.style.display = 'block';
-        responseContent.innerHTML = marked.parse(data.response);
+        responseContent.innerHTML = marked.parse(data.output);
         
         // Scroll to response
         responseSection.scrollIntoView({ behavior: 'smooth' });

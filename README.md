@@ -1,5 +1,3 @@
-Test it locally again. Something seems wrong!
-
 <div align="center"><a name="readme-top"></a>
 
 <img src="./images/icon.png" alt="Icon" style="width: 200px; height: auto;">
@@ -20,12 +18,15 @@ Test it locally again. Something seems wrong!
 
 - [ ] Integrating velocity finder with panel.py
 - [ ] Creating a exit-velocity finder using bat-tracking
-- [ ] An old video uploader and hence generating statcast for that (add this in options itself)
+- [x] An old video uploader and hence generating statcast for that (add this in options itself) --> This works! User's can now upload videos and get statcast data (velocity for now)
 
 - [x] Update logic of speed calculation to fill in missing frames with averages (espectially closely missing ones)
 - [ ] Update logic to handle different camera angles.
 
 - [ ] Ensure proper readmes for all!
+- [x] Forget render and backend for now, we'll look into it later. Run local host as of now
+- [ ] We gotta add another button which basically means "initialise the model" so that the user doesn't have to wait for the model to download (as I can't push that to GitHub)
+
 Developing an extension that can read your screen and give you live data updates and tips on your favourite baseball games! (With permission)
 
 > [!IMPORTANT]
