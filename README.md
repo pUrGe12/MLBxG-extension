@@ -29,7 +29,7 @@
 - [ ] Need to tell the user that uploading videos may take time as we first need to download it! (in classics.html page)
 - [ ] Ensure proper readmes for all!
 - [x] Forget render and backend for now, we'll look into it later. Run local host as of now
-- [ ] We gotta add another button which basically means "initialise the model" so that the user doesn't have to wait for the model to download (as I can't push that to GitHub)
+- [x] We gotta add another button which basically means "initialise the model" so that the user doesn't have to wait for the model to download (as I can't push that to GitHub)
 
 Developing an extension that can read your screen and give you live data updates and tips on your favourite baseball games! (With permission)
 
