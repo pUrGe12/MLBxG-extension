@@ -1,3 +1,53 @@
+document.getElementById('load-models').addEventListener('click', async () => {
+    const loadButton = document.getElementById('load-models');
+    const statusDiv = document.getElementById('load-status');
+    
+    // Disable button while loading
+    loadButton.disabled = true;
+    loadButton.style.opacity = '0.7';
+    loadButton.textContent = 'Loading Models...';
+    
+    // Show loading status
+    statusDiv.textContent = "Loading model, please wait...";
+    statusDiv.style.display = 'block';
+    statusDiv.className = 'upload-status success';
+    
+    try {
+        const response = await fetch(`${BASE_URL}/load-yolo-model/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        statusDiv.textContent = "Model loaded successfully!";
+        statusDiv.className = 'upload-status success';
+        
+        loadButton.disabled = false;
+        loadButton.style.opacity = '1';
+        loadButton.textContent = 'Load Models';
+        
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 3000);
+        
+    } catch (error) {
+        console.error('Fetch error:', error);
+        statusDiv.textContent = 'Error loading models. Please try again.';
+        statusDiv.className = 'upload-status error';
+        
+        loadButton.disabled = false;
+        loadButton.style.opacity = '1';
+        loadButton.textContent = 'Load Models';
+    }
+});
+
 // const BASE_URL = 'https://mlbxg-extension-1.onrender.com';
 const BASE_URL = 'http://127.0.0.1:5000';
 

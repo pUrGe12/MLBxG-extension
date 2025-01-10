@@ -18,7 +18,7 @@ import time
 # For getting the video's link using selenium
 # Note that in the future, this is the most likely part that will get fucked
 
-# MAKE SURE THAT YOU CHECK THESE VALUES BEFORE SUBMISSION
+# MAKE SURE THAT YOU CHECK THESE VALUES BEFORE SUBMISSION, that is, the values of the CSS selectors
 def get_url(user_query):
 
     chrome_options = Options()
@@ -32,10 +32,12 @@ def get_url(user_query):
 
     driver.get(f'https://www.youtube.com/results?search_query={user_query}')
 
-    # This will always find the first link of the video (it won't pick up the sponsor messages so chill)
-    filter_for_four_to_twenty_minutes = driver.find_element(By.CSS_SELECTOR, "yt-chip-cloud-chip-renderer.style-scope:nth-child(9) > div:nth-child(2)").click()  # WHY CANT I CLICK HERE
+    # WHY CANT I CLICK HERE? This is for filtering based on 4-20 minutes. Commenting this for now
+    # filter_for_four_to_twenty_minutes = driver.find_element(By.CSS_SELECTOR, "yt-chip-cloud-chip-renderer.style-scope:nth-child(9) > div:nth-child(2)").click()
 
     time.sleep(1)           # let the page load
+
+    # This will always find the first link of the video (it won't pick up the sponsor messages so chill)
     link = driver.find_element(By.XPATH, "/html/body/ytd-app/div[1]/ytd-page-manager/ytd-search/div[1]/ytd-two-column-search-results-renderer/div/ytd-section-list-renderer/div[2]/ytd-item-section-renderer/div[3]/ytd-video-renderer[1]/div[1]/div/div[1]/div/h3/a").get_attribute('href')
 
     # link has currently the & part which is something we don't care about
@@ -889,6 +891,17 @@ def classics_text_processing():
 
     return jsonify({
         'message': f"Downloaded URL: {custom_url}"
+        })
+
+
+@app.route('/load-yolo-model/', methods=['POST'])
+def loading_yolo_models():
+    load_tools = LoadTools()
+    model_weights = load_tools.load_model(model_alias='ball_trackingv4')
+    model = YOLO(model_weights)
+
+    return jsonify({
+        'message': "loaded deeplearning model"
         })
 
 if __name__ == "__main__":

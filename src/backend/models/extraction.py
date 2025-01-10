@@ -42,6 +42,8 @@ def extractor(user_prompt):
         """
     
     try:
+
+        print('In the try block of the extractor')
         output = ''
         response = chat.send_message(prompt, stream=False, safety_settings={
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE, 
