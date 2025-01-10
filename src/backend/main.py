@@ -6,7 +6,29 @@ import sys
 
 from moviepy.editor import VideoFileClip
 
-import requests             # Making post requests to the getBuffer method
+# imports for scraping and downloading youtube videos for old classical matches
+import os
+from yt_dlp import YoutubeDL
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+import time
+
+# For getting the video's link using selenium
+def get_url(user_query):
+    driver = webdriver.Chrome()
+    driver.get(f'https://www.youtube.com/results?search_query={user_query}')
+
+    # This will always find the first link of the video (it won't pick up the sponsor messages so chill)
+    link = driver.find_element(By.XPATH, "/html/body/ytd-app/div[1]/ytd-page-manager/ytd-search/div[1]/ytd-two-column-search-results-renderer/div/ytd-section-list-renderer/div[2]/ytd-item-section-renderer/div[3]/ytd-video-renderer[1]/div[1]/div/div[1]/div/h3/a").get_attribute('href')
+
+    # link has currently the & part which is something we don't care about
+    link = str(link.split('&')[0])
+
+    return link
+
+# Making post requests to the getBuffer method
+import requests             
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__))) # adding the root directory to path
 # This should be done before any relative imports, adding the "backend" directory as root
@@ -86,7 +108,6 @@ def load_models():
 
 global encoder, scaler
 encoder, scaler = load_models()             # Load the encoder and the scaler using the above defined function
-
 
 def process_new_hit(new_hit_data, encoder, scaler):
     """
@@ -817,15 +838,41 @@ Estimated speed: {speed_est['min_speed_mph']:.1f}""" + f""" to {speed_est['max_s
 def classics_text_processing():
     '''
     Here we will have to first scrape the video! Then apply the same concept as above
+    
+    With this we have downloaded the video, now we can start processing.
+    Now, this video is likely going to be very long! (may even be hours long). So how do we parse this and generate meaningful output?
+
+    1. Ensure that the video we're downloading is less than 20 minutes (so, its more like highlights rather than the entire match)
+    2. If the video length is more than 20 minutes, ask the user to be generous otherwise it'll take way too much time!
+    3. So, we're detecting valid sequences of continous ball movements. In highlights, this may refer to either a pitch, or a hit and travel by the ball, or a player's throw
+    4. We need to see how we differentiate that. Also, we can use timestamps of the video itself to let the know the ball speeds for the sequence within that timestamp!
+
+    So basically, the user get's an output like "within the 5th to 6th second, the ball was travelling at a speed of 97mph" and that one second was the pitch. This way. 
+
+    Now, we can do similar things for the batsman's hit. This will be easier because the logic is then to have both the bat and the ball in the same frame, with distance between them reducing, 
+    and the bat swinging. Just code these conditions and we're done.
     '''
+
     user_input = request.json.get('input')  # Receive input from the panel
     print(user_input)
 
     if not user_input:
         return jsonify({"error": "No input provided"}), 400
 
+    # assuming user_input is a properly formatted input that we can directly use to search youtube (later we'll add LLM)
+
+    custom_url = get_url(user_input)                                                    # based on user's input search youtube and select the first link
+    path = '/home/purge/Desktop/MLBxG-extension/src/backend/downloads_classical'                # note that we can later change all these to match the path of the user
+
+    ydl_opts = {
+        'outtmpl': os.path.join(path, '%(title)s.%(ext)s'),
+    }
+
+    with YoutubeDL(ydl_opts) as ydl:
+        ydl.download([custom_url])
+
     return jsonify({
-        'message': f"you entered {user_input}"
+        'message': f"Downloaded URL: {custom_url}"
         })
 
 if __name__ == "__main__":

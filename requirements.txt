@@ -5,6 +5,9 @@ pinecone
 pinecone[grpc]
 joblib
 
+yt-dlp
+selenium
+
 moviepy==1.0.3
 ultralytics
 tqdm
