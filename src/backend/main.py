@@ -12,14 +12,30 @@ from yt_dlp import YoutubeDL
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 import time
 
 # For getting the video's link using selenium
+# Note that in the future, this is the most likely part that will get fucked
+
+# MAKE SURE THAT YOU CHECK THESE VALUES BEFORE SUBMISSION
 def get_url(user_query):
-    driver = webdriver.Chrome()
+
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Run in headless mode
+    chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
+    chrome_options.add_argument("--no-sandbox")  # Bypass OS security model
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+    chrome_options.add_argument("--window-size=1920x1080")  # Set window size for proper element rendering
+
+    driver = webdriver.Chrome(options=chrome_options)
+
     driver.get(f'https://www.youtube.com/results?search_query={user_query}')
 
     # This will always find the first link of the video (it won't pick up the sponsor messages so chill)
+    filter_for_four_to_twenty_minutes = driver.find_element(By.CSS_SELECTOR, "yt-chip-cloud-chip-renderer.style-scope:nth-child(9) > div:nth-child(2)").click()  # WHY CANT I CLICK HERE
+
+    time.sleep(1)           # let the page load
     link = driver.find_element(By.XPATH, "/html/body/ytd-app/div[1]/ytd-page-manager/ytd-search/div[1]/ytd-two-column-search-results-renderer/div/ytd-section-list-renderer/div[2]/ytd-item-section-renderer/div[3]/ytd-video-renderer[1]/div[1]/div/div[1]/div/h3/a").get_attribute('href')
 
     # link has currently the & part which is something we don't care about

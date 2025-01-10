@@ -23,6 +23,10 @@
 - [x] Update logic of speed calculation to fill in missing frames with averages (espectially closely missing ones)
 - [ ] Update logic to handle different camera angles.
 
+- [x] Download youtube video and directly using text input
+- [ ] Run statcast on that
+
+- [ ] Need to tell the user that uploading videos may take time as we first need to download it! (in classics.html page)
 - [ ] Ensure proper readmes for all!
 - [x] Forget render and backend for now, we'll look into it later. Run local host as of now
 - [ ] We gotta add another button which basically means "initialise the model" so that the user doesn't have to wait for the model to download (as I can't push that to GitHub)
