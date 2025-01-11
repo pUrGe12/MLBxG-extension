@@ -1,3 +1,13 @@
+"""
+This is the for the options backend. This is supposed to be the MLB future predictor. The way this is done is as follows
+
+Step 1 --> Extract the user's stats based on their prompt and give it numerical values. 
+Step 2 --> Create a query of those stats and send it to pinecone.
+Step 3 --> Access the top players from pinecone who match the user's performance.
+Step 4 --> Based on additional information (if provided by the user) further single out 2 players from the top few.
+Step 5 --> Wrap it around Gemini's response and push it to the user as a statistical estimate of how well their future in MLB may turn out to be based on their current performance.
+"""
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
@@ -29,16 +39,6 @@ from API_querying.query import team_code_mapping, player_code_mapping
 # Imports for helpers
 from models.helper_models import check_buffer_needed, is_it_gen_stuff
 from models.helper_models import gen_talk
-
-"""
-This is the backend file for the options page. This is supposed to be the MLB future predictor. The way this is done is as follows
-
-Step 1 --> Extract the user's stats based on their prompt and give it numerical values. 
-Step 2 --> Create a query of those stats and send it to pinecone.
-Step 3 --> Access the top players from pinecone who match the user's performance.
-Step 4 --> Based on additional information (if provided by the user) further single out 2 players from the top few.
-Step 5 --> Wrap it around Gemini's response and push it to the user as a statistical estimate of how well their future in MLB may turn out to be based on their current performance.
-"""
 
 import numpy as np
 import pandas as pd

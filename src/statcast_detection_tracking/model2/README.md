@@ -70,3 +70,8 @@ This we'll do using interpolated fields.
 ## Note
 
 If you want to use the v4 model, the weights are in the desktop (cound't push that in github cause it was too big! Will prolly compress and use.)
+
+
+## Adding angles
+
+we will have to consider both the angles. Figure out what effect both the angles have on the speed of the ball. Then code it.
