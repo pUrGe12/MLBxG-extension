@@ -4,12 +4,13 @@ from flask_cors import CORS
 import os
 import sys
 
+# For converting to mp4
 from moviepy.editor import VideoFileClip
 
 # imports for scraping and downloading youtube videos for old classical matches
-import os
 from yt_dlp import YoutubeDL
 
+# Selenium imports
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
@@ -45,38 +46,11 @@ import pandas as pd
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 import google.generativeai as genai
 
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-
-# from prompts import statPrompt
-
-# from dotenv import load_dotenv                # Don't need to do this if we've specified .env contents in render
-# from pathlib import Path
-
-# ---------------------------------------------------------------------------
-# Model to wrap things and output final answer
-# ---------------------------------------------------------------------------
-
-from helper_files.options import GPT_response, load_models, process_new_hit, find_similar_hits, store_similar_hits
-
-# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#                                                                              Code for generating baseball speed
-# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# Code for generating baseball speed
+# --------------------------------------------------------------------------
 
 from ultralytics import YOLO
-
-import requests
-import os
-from tqdm import tqdm
-import zipfile
-import io
-from typing import Optional, Union, List, Tuple, Dict
-import shutil
-
-import cv2
-import numpy as np
-from dataclasses import dataclass
-from collections import defaultdict
 
 from baseball_detect.flow import LoadTools, BallDetection, BaseballTracker          # This will handle everything
 
@@ -89,13 +63,14 @@ from models.extraction import extractor
 # This is the code for loading the trained models, and querying the vectorDB
 # ---------------------------------------------------------------------------
 
-from tensorflow.keras.models import load_model, Model
-import joblib
-from pinecone.grpc import PineconeGRPC as Pinecone
-from pinecone import ServerlessSpec
+from helper_files.options import GPT_response, load_models, process_new_hit, find_similar_hits, store_similar_hits
 
 global encoder, scaler
 encoder, scaler = load_models()             # Load the encoder and the scaler using the above defined function
+
+# ---------------------------------------------------------------------------
+# Some helping functions
+# ---------------------------------------------------------------------------
 
 def convert_webm_to_mp4(input_path, output_path):
     clip = VideoFileClip(input_path)
