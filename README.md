@@ -14,22 +14,23 @@
 </div>
 
 
+# Work
+
+Options page
+
+- [ ] Make it look better (add the similarity table in the right div)
+- [ ] In the second edition I am planning on annotating the video feed itself and displaying the entire video as an output. This will be much easier for the user to comprehend!
+- [ ] Figure out the sending and recieving of the buffer video
+- [ ] The novice users can enter a `mp4` video file that contains them practising their swings or pitches.
+
+How do we compare? Will have to learn...
+
 # More things
 
 - [ ] Integrating velocity finder with panel.py
 - [ ] Creating a exit-velocity finder using bat-tracking
-- [x] An old video uploader and hence generating statcast for that (add this in options itself) --> This works! User's can now upload videos and get statcast data (velocity for now)
-
-- [x] Update logic of speed calculation to fill in missing frames with averages (espectially closely missing ones)
 - [ ] Update logic to handle different camera angles.
-
-- [x] Download youtube video and directly using text input
-- [ ] Run statcast on that
-
-- [ ] Need to tell the user that uploading videos may take time as we first need to download it! (in classics.html page)
-- [ ] Ensure proper readmes for all!
-- [x] Forget render and backend for now, we'll look into it later. Run local host as of now
-- [x] We gotta add another button which basically means "initialise the model" so that the user doesn't have to wait for the model to download (as I can't push that to GitHub)
+- [ ] Run statcast on the downloaded youtube video
 
 Developing an extension that can read your screen and give you live data updates and tips on your favourite baseball games! (With permission)
 
@@ -40,7 +41,7 @@ Developing an extension that can read your screen and give you live data updates
 1. Panel page: For when you are watching a YouTube match. (can be later extended to others as well)
 2. Options page: For predicting your MLB future by comparing you to top players!
 
-There is also a `guide` page which explains how the site was made and contains all the techincal explanations.
+There is also a `guide` page which explains how the site was made and contains all the techincal explanations. Visit this in the `extension options` and figure out what's in store for you!
 
 ## What is the panel page?
 
@@ -77,38 +78,6 @@ This is the options page. This page is to help you predict your MLB future and a
 ---
 
 Have created seperate ports for the panel and the options page because it will be much easier to manage and make changes in that.
-
-# Work
-
-                6th Jan 2025 --> Work solely on testing different datasets.
-
-                If nothing works then 
-
-                7th Jan 2025 - 10th Jan 2025 (that is 4 days)
-                Work on creating new dataset for the model. Need atleast 200 images. All labelled and all exactly in `roboflow` style.
-
-                Then train on that and see.
-
-                If that also doesn't work (or if the confidence threshold is below 20%) then fuck yolov5. Look at `yolov7`.
-
-Completed:
-
-- [ ] Complete the `guide` page today
-- [x] API setup and querying through the panel
-- [x] Pinecone pipeline and prediction model
-- [x] Writing README for instructions regarding training YOLOv5
-- [ ] Start manually creating the dataset for baseballs.
-
-Options page
-
-- [ ] Make it look better (add the similarity table in the right div)
-
----
-
-Broad goals
-
-- [ ] Figure out the sending and recieving of the buffer video
-- [ ] Integrate the finding the statcast data with panel.py
 
 ---
 
