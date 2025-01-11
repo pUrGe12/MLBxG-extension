@@ -15,36 +15,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import time
 
-# For getting the video's link using selenium
-# Note that in the future, this is the most likely part that will get fucked
-
-# MAKE SURE THAT YOU CHECK THESE VALUES BEFORE SUBMISSION, that is, the values of the CSS selectors
-def get_url(user_query):
-
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run in headless mode
-    chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
-    chrome_options.add_argument("--no-sandbox")  # Bypass OS security model
-    chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
-    chrome_options.add_argument("--window-size=1920x1080")  # Set window size for proper element rendering
-
-    driver = webdriver.Chrome(options=chrome_options)
-
-    driver.get(f'https://www.youtube.com/results?search_query={user_query}')
-
-    # WHY CANT I CLICK HERE? This is for filtering based on 4-20 minutes. Commenting this for now
-    # filter_for_four_to_twenty_minutes = driver.find_element(By.CSS_SELECTOR, "yt-chip-cloud-chip-renderer.style-scope:nth-child(9) > div:nth-child(2)").click()
-
-    time.sleep(1)           # let the page load
-
-    # This will always find the first link of the video (it won't pick up the sponsor messages so chill)
-    link = driver.find_element(By.XPATH, "/html/body/ytd-app/div[1]/ytd-page-manager/ytd-search/div[1]/ytd-two-column-search-results-renderer/div/ytd-section-list-renderer/div[2]/ytd-item-section-renderer/div[3]/ytd-video-renderer[1]/div[1]/div/div[1]/div/h3/a").get_attribute('href')
-
-    # link has currently the & part which is something we don't care about
-    link = str(link.split('&')[0])
-
-    return link
-
 # Making post requests to the getBuffer method
 import requests             
 
@@ -78,131 +48,16 @@ import google.generativeai as genai
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-from prompts import statPrompt
+# from prompts import statPrompt
 
-from dotenv import load_dotenv                # Don't need to do this if we've specified .env contents in render
-from pathlib import Path
-
-load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / '.env')
-
-API_KEY = str(os.getenv("API_KEY")).strip()
-
-# print(API_KEY)
-pinecone_api_key = str(os.getenv("pinecone_api_key")).strip()
-
-genai.configure(api_key=API_KEY)
-
-model = genai.GenerativeModel('gemini-pro')
-chat = model.start_chat(history=[])
-
-# ---------------------------------------------------------------------------
-# Extraction model calling and implementation
-# ---------------------------------------------------------------------------
-from models.extraction import extractor
-
-# ---------------------------------------------------------------------------
-# This is the code for loading the trained models, and querying the vectorDB
-# ---------------------------------------------------------------------------
-
-from tensorflow.keras.models import load_model, Model
-import joblib
-from pinecone.grpc import PineconeGRPC as Pinecone
-from pinecone import ServerlessSpec
-
-def load_models():
-    '''
-        The encoder and the scaler have been trained through the notebook present in the prediction directory
-        The datasets used to train these are present inside the datasets directory. These are exactly what were provided by the organisers.
-    
-        input: None
-        return: instances of the encoder and the scaler model.
-    '''
-
-    encoder = load_model('../prediction/models/encoder_model.h5')
-    scaler = joblib.load('../prediction/models/scaler.joblib')
-    
-    return encoder, scaler
-
-
-global encoder, scaler
-encoder, scaler = load_models()             # Load the encoder and the scaler using the above defined function
-
-def process_new_hit(new_hit_data, encoder, scaler):
-    """
-        This function takes in the players stats and generates embeddings using the trained models
-    """
-    
-    assert type(new_hit_data) == dict, 'The hit data must be a dictionary'
-    features = np.array([[
-        new_hit_data['ExitVelocity'],
-        new_hit_data['HitDistance'],
-        new_hit_data['LaunchAngle']
-    ]])
-    
-    embedding = encoder.predict(scaler.transform(features))
-    return embedding[0]
-
-def find_similar_hits(embedding, index_name="baseball-hits", top_k=5):
-    """Find similar hits in the database"""
-
-    pinecone = Pinecone(api_key=pinecone_api_key)
-    
-    index = pinecone.Index(index_name)
-    results = index.query(
-        vector=embedding.tolist(),
-        top_k=top_k,
-        include_metadata=True
-    )
-    return results
-
-def store_similar_hits(results):
-    """Store the details of similar hits in a structured format."""
-
-    matches = []
-    for idx, match in enumerate(results.matches, 1):
-        match_details = {
-            "SimilarityScore": round(match.score, 3),
-            "Title": match.metadata.get("title", "Unknown"),
-            "ExitVelocity": f"{float(match.metadata.get('exit_velocity', 0.0)):.1f} mph",
-            "HitDistance": f"{float(match.metadata.get('hit_distance', 0.0)):.1f} feet",
-            "LaunchAngle": f"{float(match.metadata.get('launch_angle', 0.0)):.1f} degrees",
-        }
-        matches.append(match_details)
-    
-    return matches
+# from dotenv import load_dotenv                # Don't need to do this if we've specified .env contents in render
+# from pathlib import Path
 
 # ---------------------------------------------------------------------------
 # Model to wrap things and output final answer
 # ---------------------------------------------------------------------------
 
-def GPT_response(top_similar_hits, additional_params):
-    prompt = str(statPrompt[0]) + f"""
-                                These are the top similar homeruns in MLB: {top_similar_hits}
-                                These are the additional user stats: {additional_params}
-        """                         
-    
-    try:
-        output = ''
-        response = chat.send_message(prompt, stream=False, safety_settings={
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE, 
-            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE
-        })
-
-        # Sometimes the model acts up...
-        if not response:
-            raise ValueError("No response received")
-
-        for chunk in response:
-            if chunk.text:
-                output += str(chunk.text)
-
-        return output
-
-    except Exception as e:
-        print(f"Error generating response: {e}")
-        return 'Try again'
+from helper_files.options import GPT_response, load_models, process_new_hit, find_similar_hits, store_similar_hits
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #                                                                              Code for generating baseball speed
@@ -225,10 +80,57 @@ from collections import defaultdict
 
 from baseball_detect.flow import LoadTools, BallDetection, BaseballTracker          # This will handle everything
 
+# ---------------------------------------------------------------------------
+# Extraction model calling and implementation
+# ---------------------------------------------------------------------------
+from models.extraction import extractor
+
+# ---------------------------------------------------------------------------
+# This is the code for loading the trained models, and querying the vectorDB
+# ---------------------------------------------------------------------------
+
+from tensorflow.keras.models import load_model, Model
+import joblib
+from pinecone.grpc import PineconeGRPC as Pinecone
+from pinecone import ServerlessSpec
+
+global encoder, scaler
+encoder, scaler = load_models()             # Load the encoder and the scaler using the above defined function
+
 def convert_webm_to_mp4(input_path, output_path):
     clip = VideoFileClip(input_path)
     clip.write_videofile(output_path, codec="libx264")
     clip.close()
+
+# For getting the video's link using selenium
+# Note that in the future, this is the most likely part that will get fucked
+
+# MAKE SURE THAT YOU CHECK THESE VALUES BEFORE SUBMISSION, that is, the values of the CSS selectors
+def get_url(user_query):
+
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Run in headless mode
+    chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
+    chrome_options.add_argument("--no-sandbox")  # Bypass OS security model
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+    chrome_options.add_argument("--window-size=1920x1080")  # Set window size for proper element rendering
+
+    driver = webdriver.Chrome(options=chrome_options)
+
+    driver.get(f'https://www.youtube.com/results?search_query={user_query}')
+
+    # WHY CANT I CLICK HERE? This is for filtering based on 4-20 minutes. Commenting this for now
+    # filter_for_four_to_twenty_minutes = driver.find_element(By.CSS_SELECTOR, "yt-chip-cloud-chip-renderer.style-scope:nth-child(9) > div:nth-child(2)").click()
+
+    time.sleep(1)           # let the page load
+
+    # This will always find the first link of the video (it won't pick up the sponsor messages so chill)
+    link = driver.find_element(By.XPATH, "/html/body/ytd-app/div[1]/ytd-page-manager/ytd-search/div[1]/ytd-two-column-search-results-renderer/div/ytd-section-list-renderer/div[2]/ytd-item-section-renderer/div[3]/ytd-video-renderer[1]/div[1]/div/div[1]/div/h3/a").get_attribute('href')
+
+    # link has currently the & part which is something we don't care about
+    link = str(link.split('&')[0])
+
+    return link
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #                                                                                       API endpoints
@@ -368,8 +270,6 @@ def process_input():
                 return jsonify({"error": "Failed to get buffer"}), 500
 
 
-
-
 @app.route('/user-stat/', methods=['POST'])
 def user_stat():
     user_input = request.json.get('input')  # Receive input from the panel
@@ -405,7 +305,7 @@ def user_stat():
 
         print(top_similar_hits)
 
-        processed_output = GPT_response(top_similar_hits, additional_params.get('AdditionalParams'))                    # Both additional params and extractor dict are dictionaries.
+        processed_output = GPT_response(top_similar_hits, additional_params.get('AdditionalParams'), user_input)                    # Both additional params and extractor dict are dictionaries.
 
         print(processed_output)
 

@@ -14,22 +14,19 @@ import pandas as pd
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 import google.generativeai as genai
 
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-
 import os
 import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))) # adding the root directory to path
 from prompts import statPrompt
 
+# print(statPrompt[0])
 from dotenv import load_dotenv
 from pathlib import Path
 
 load_dotenv(dotenv_path=Path(__file__).parent.parent.parent.parent / '.env')
 
 API_KEY = str(os.getenv("API_KEY")).strip()
-print(API_KEY)
 pinecone_api_key = str(os.getenv("pinecone_api_key")).strip()
 
 genai.configure(api_key=API_KEY)
@@ -60,8 +57,8 @@ def load_models():
         return: instances of the encoder and the scaler model.
     '''
 
-    encoder = load_model('../../prediction/models/encoder_model.h5')
-    scaler = joblib.load('../../prediction/models/scaler.joblib')
+    encoder = load_model('../prediction/models/encoder_model.h5')
+    scaler = joblib.load('../prediction/models/scaler.joblib')
     
     return encoder, scaler
 
@@ -148,69 +145,3 @@ def GPT_response(top_similar_hits, additional_params, user_input):
     except Exception as e:
         print(f"Error generating response: {e}")
         return 'Try again'
-
-app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
-
-@app.route('/user-stat/', methods=['POST'])
-def process_input():
-    user_input = request.json.get('input').strip()  # Receive input from the panel
-
-    print(user_input)
-
-    if not user_input:
-        return jsonify({"error": "No input provided"}), 400
-
-    try:
-        print('in the try block')
-        extractor_dictionary, additional_params = extractor(user_input)
-
-        print("unpacked the tuple!")
-
-        '''  
-            extractor output is a dictionary that describes the following of the user
-            1. ExitVelocity
-            2. HitDistance
-            3. LaunchAngle
-
-            We parse the "AdditionalParams" seperately. The idea is to send the extractor_dictionary to the pineconeDB and get top similar hits
-
-        '''
-
-        embedding = process_new_hit(extractor_dictionary, encoder, scaler)                           
-        
-        print("embeddings generated")
-
-        # Find the top 5 matches to the user's stats being entered above.
-        found_similar_hits = find_similar_hits(embedding, top_k = 5)
-        top_similar_hits = store_similar_hits(found_similar_hits)               # Storing that to send it to the model for prettifying
-
-        print(top_similar_hits)
-
-        processed_output = GPT_response(top_similar_hits, additional_params.get('AdditionalParams'), user_input)                    # Both additional params and extractor dict are dictionaries.
-
-        print(processed_output)
-
-        return jsonify({
-            "response": processed_output
-            })
-
-    except Exception as e:
-        incomplete_text = extractor(user_input.strip())
-
-        print(incomplete_text)
-        print('here in exception', e)
-
-        '''
-            Enter this block of code when unpacking the tuple leads to an exception
-            This will only happen when there is only one element being returned by the extractor, that is the incomplete text. 
-
-            We will show the incomplete text directly to the user. 
-        '''
-
-        return jsonify({
-            "response": incomplete_text
-            })
-
-if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)    # Note if you're running this standalone then you must change this to 5001
