@@ -38,3 +38,23 @@ y' = \frac{(y_2-y_1)}{x_2-x_1} (x_0 - x_1) + y_1
 $$
 
 We'll use one of the two definitions of $\alpha$ depending on whether $$y'$$ happens to be positive or negative. According to the screen's layout, the top left corner is the origin and the X axis is along the right and Y axis perpendicularly downwards. 
+
+If $$y'$$ is positive we use the 2nd definition (because that means it was within the screen itself), and if negative then the first one.
+
+---
+
+After finding the $\alpha$ value we calculate the actual speed. Now think about rotating the line with pitcher and the catcher by this angle $\alpha$ such that it lines up with the screen's normal. This means we shift the camera by the same angle to the right. 
+
+Now, if the real speed of the ball is $$V_r$$ and the speed we calculate is $$V_app$$ then the relation between them becomes
+
+$$
+V_app = V_r * sin(\alpha)
+$$
+
+and thus,
+
+$$
+V_r = V_app * csc(\alpha)
+$$
+
+We calculate this and we're done!

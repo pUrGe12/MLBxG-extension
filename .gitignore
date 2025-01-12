@@ -1,3 +1,7 @@
+# Big files
+test/camera_angle/ball_tracking/ball_trackingv4.pt
+test/camera_angle/ball_tracking/pitcher_hitter_catcher_detector_v4.pt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
