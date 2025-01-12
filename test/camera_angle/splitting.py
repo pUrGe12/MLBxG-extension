@@ -158,16 +158,35 @@ for player_type, positions in player_positions.items():
 
 # So, this is working good, we're getting believeable data about their positions
 
-# import tkinter as tk
 
-# root = tk.Tk()
-# width = root.winfo_screenwidth()
-# height = root.winfo_screenheight()
+# Everyone may have different screen sizes, so making this more adaptive
+import tkinter as tk
 
-# print("Screen width:", width)
-# print("Screen height:", height)
+root = tk.Tk()
+width = root.winfo_screenwidth()
+height = root.winfo_screenheight()
 
-# half_width = width // 2
-# half_height = height // 2
+print("Screen width:", width)
+print("Screen height:", height)
 
-# screen_center = (half_width, half_height)
+half_width = width // 2
+half_height = height // 2
+
+screen_center = (half_width, half_height)
+
+# calculating y' (or y_)
+for player_type, avg_pos in average_positions.items():
+    if 'pitcher' in player_type:                                # Not sure if this is supposed to be the name or the class ID, we'll do trial and error
+        x2 = f"{avg_pos[0]:.2f}"
+        y2 = f"{avg_pos[1]:.2f}"
+
+    elif 'catcher' in player_type:
+        x1 = f"{avg_pos[0]:.2f}"
+        y1 = f"{avg_pos[1]:.2f}"
+
+y_ = ((y2-y1)/(x2-x1)) * (half_width - x1) + y1
+
+if y_ < 0:
+    Delta_y = abs(y_) + y2                                                  # add the pitchers's coordinates 
+np.arctan()
+np.sin()

@@ -12,4 +12,29 @@ Use screen's dimensions to figure out the angle between the pitcher and the bats
 
 ## Calculation
 
-So, the pitch distance should change. How exactly? We'll have to figure out the calculations!
+Assuming, 
+
+1. The camera will always be pointed such that the pitcher is player lower than the catcher in the screen.
+2. The camera's central point will the normal to the screen (that is, a line passing down the middle, splitting the screen width into two)
+
+let the line made by the catcher and the pitcher make an angle $\alpha$ with the screen's normal. This means $\alpha$ can be calculated using the following
+
+$$
+\alpha = tan^{-1} \left(\frac{abs \left(x_2-x_0 \right)}{abs(y')+y_2}\right)
+$$
+
+or,
+
+$$
+\alpha = tan^{-1} \left( \frac{abs(x_2-x_0)}{y_2 - y'} \right)
+$$
+
+where, ($$x_2$$, $$y_2$$) are coordinates of the pitcher and ($$x_1$$, $$y_1$$) are the coordinates of the catcher. This is found using the yolo models we have and we take average of the center of the bounding box for the picher and catcher for each frame. 
+
+$$x_0, y'$$ is the coordinate of the point of intersection of the line joining the catcher and the pitcher to the central normal. $$y'$$ is given by,
+
+$$
+y' = \frac{(y_2-y_1)}{x_2-x_1} (x_0 - x_1) + y_1
+$$
+
+We'll use one of the two definitions of $\alpha$ depending on whether $$y'$$ happens to be positive or negative. According to the screen's layout, the top left corner is the origin and the X axis is along the right and Y axis perpendicularly downwards. 
