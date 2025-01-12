@@ -1,5 +1,3 @@
-# This is a backup, fix this!
-
 '''
 okay so, top left corner is most likely to be the origin. To the right, and to the bottom are positive axes. 
 
@@ -362,8 +360,10 @@ results = tracker.process_video(SOURCE_VIDEO_PATH)
 
 # Asumming only one valid sequence is present
 for i, speed_est in enumerate(results['speed_estimates'], 1):
-    estimated_speed_min = f"{speed_est['min_speed_mph']:.1f}"
-    estimated_speed_max = f"{speed_est['max_speed_mph']:.1f}"
+    estimated_speed_min = float(speed_est['min_speed_mph'])
+    estimated_speed_max = float(speed_est['max_speed_mph'])
+
+# Slight slight issue! This only works if estimated_speed_min/max are in the range 0.25 to 0.3! This is probably my calculations of velocity.
 
 # -------------------------------------------------------------------------------------------------------------------------------------
 #       Here we have already run the model and established the speeds. Now we run a new model for detecting catchers and pitchers
@@ -397,7 +397,6 @@ for frame_idx, r in enumerate(results):
     
     # Get frame dimensions
     if hasattr(r, 'orig_img'):
-        print('found it myself')
         frame_height, frame_width = r.orig_img.shape[:2]
     else:
         print('using these!')
@@ -445,22 +444,18 @@ print("\nAbsolute Coordinates (in pixels):")
 for player_type, avg_pos in average_positions.items():
     print(f"Average {player_type} position: x={avg_pos[0]:.2f}, y={avg_pos[1]:.2f}")
 
-print("\nNormalized Coordinates (0-1 range):")
-for player_type, avg_pos in average_positions_normalized.items():
-    print(f"Average {player_type} position: x={avg_pos[0]:.3f}, y={avg_pos[1]:.3f}")
 
-# Print detection statistics
-print("\nDetection Statistics:")
-for player_type, positions in player_positions.items():
-    detection_rate = len(positions) / len(results) * 100
-    print(f"{player_type.capitalize()} detected in {detection_rate:.1f}% of frames")
+global x2, y2, x1, y1                       # x2, y2 is the pitcher and x1, y1 is the catcher
 
-# So, this is working good, we're getting believeable data about their positions
+x1 = float(average_positions.get('catcher')[0])
+y1 = float(average_positions.get('catcher')[1])
 
+x2 = float(average_positions.get('pitcher')[0])
+y2 = float(average_positions.get('pitcher')[1])
 
 # Everyone may have different screen sizes, so making this more adaptive
 import tkinter as tk
-
+import numpy as np
 root = tk.Tk()
 width = root.winfo_screenwidth()
 height = root.winfo_screenheight()
@@ -473,31 +468,9 @@ half_height = float(height // 2)
 
 screen_center = (half_width, half_height)
 
-global x2, y2, x1, x2
-# calculating y' (or y_)
-for player_type, avg_pos in average_positions.items():
-    if 'pitcher' in player_type:                                # Not sure if this is supposed to be the name or the class ID, we'll do trial and error
-        x2 = float(f"{avg_pos[0]:.2f}")
-        y2 = float(f"{avg_pos[1]:.2f}")
+alpha = float(np.arctan((x2-x1)/(y2-y1)))
 
-    elif 'catcher' in player_type:
-        x1 = float(f"{avg_pos[0]:.2f}")
-        y1 = float(f"{avg_pos[1]:.2f}")
-
-y_ = ((y2-y1)/(x2-x1)) * (half_width - x1) + y1
-
-if y_ < 0:
-    Delta_y = abs(y_) + y2                                                  # add the pitchers's coordinates 
-    Delta_x = abs(x2-x1)
-    alpha = np.arctan(Delta_x/Delta_y)
-
-elif y_ > 0:    
-    Delta_y = abs(y_2 - y_)                                                 # This should always be positive regaradless of abs()
-    Delta_x = abs(x2-x1)
-    alpha = np.arctan(Delta_x/Delta_y)
-
-else:
-    print("Very rare")
+print(alpha)
 
 v_real_max = estimated_speed_max * 1/np.sin(alpha)                    # This necessarily implies that v_real is more than v_app which is true.
 v_real_min = estimated_speed_min * 1/np.sin(alpha)
