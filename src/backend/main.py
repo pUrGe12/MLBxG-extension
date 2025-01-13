@@ -108,10 +108,10 @@ def calculate_speed(video_path, min_confidence=0.5, max_displacement=100, min_se
 
     tracker = BaseballTracker(
     model=model,
-    min_confidence=0.3,         # 0.3 confidence works good enough, gives realistic predictions
+    min_confidence=0.5,         # 0.3 confidence works good enough, gives realistic predictions
     max_displacement=100,       # adjust based on your video resolution
     min_sequence_length=7,
-    pitch_distance_range=(50, 70)  # feet
+    pitch_distance_range=(55, 65)  # feet
     )
 
     # Process video
@@ -129,7 +129,7 @@ def calculate_speed(video_path, min_confidence=0.5, max_displacement=100, min_se
             Average confidence: {speed_est['average_confidence']:.3f}
             Estimated speed: {speed_est['min_speed_mph']:.1f}""" + f""" to {speed_est['max_speed_mph']:.1f} mph
                     
-            This was within the time frame: {speed_est['start_frame'] * 1/results['total_frames']} to {speed_est['end_frame'] * 1/results['total_frames']} 
+            This was within the time frame: {speed_est['start_frame'] * 1/results['fps']} to {speed_est['end_frame'] * 1/results['fps']} 
         """
     return output
 
