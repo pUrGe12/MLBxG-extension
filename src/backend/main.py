@@ -1,13 +1,3 @@
-"""
-This is the for the options backend. This is supposed to be the MLB future predictor. The way this is done is as follows
-
-Step 1 --> Extract the user's stats based on their prompt and give it numerical values. 
-Step 2 --> Create a query of those stats and send it to pinecone.
-Step 3 --> Access the top players from pinecone who match the user's performance.
-Step 4 --> Based on additional information (if provided by the user) further single out 2 players from the top few.
-Step 5 --> Wrap it around Gemini's response and push it to the user as a statistical estimate of how well their future in MLB may turn out to be based on their current performance.
-"""
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
@@ -125,7 +115,7 @@ def calculate_speed(video_path, min_confidence=0.5, max_displacement=100, min_se
     )
 
     # Process video
-    results = tracker.process_video(VideoPath) 
+    results = tracker.process_video(video_path) 
 
     output = """"""
 
