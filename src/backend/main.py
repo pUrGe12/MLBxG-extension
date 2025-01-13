@@ -155,13 +155,17 @@ def process_input():
             print('Requires APIs')
 
             name_code_tuple = figure_out_code(team_code_mapping, player_code_mapping, user_input)
+            print(name_code_tuple)
             output = call_API(name_code_tuple)
 
             # processed_output = output
             # print(output)
 
-            processed_output = pretty_print(output)             # not doing this if the output is too big as in the case of the schedule
-        
+            if 'schedule' not in name_code_tuple[0]:
+                processed_output = pretty_print(output, user_input)             # not doing this if the output is too big as in the case of the schedule
+            else:
+                processed_output = output
+
         else:
             processed_output = gen_talk(user_input)          # We'll add a normal response generator here
 

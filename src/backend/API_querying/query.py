@@ -391,9 +391,9 @@ Ensure that you output in exactly in this format. Do not include any brackets of
 '''
 
 pretty_print_prompt = """
-You are duxMLB. You have been provided some raw information on baseball stats of either a team or a player. Your task is to beautify it and make it look cleaner to present to a user.
+You are duxMLB. You have been provided the user's input and the answer to that input as some raw information on baseball stats of either a team or a player. Your task is to beautify it and make it look cleaner to present to a user.
 
-You must output the facts exactly as provided, but in a paragraph format, with proper english rules.
+You must output the facts exactly as provided, but in a paragraph format, with proper english rules. You must ensure that you cater to the user's request when answering.
 
 The raw information will have data in a dictionary format (that is, 'value of x':'value' sort of thing), you must read through all of the data and output a paragraph that neatly summaries the entire contents.
 """
@@ -993,7 +993,7 @@ def print_schedule_summary(analysis: Dict):
 #																						Pretty printing LLM
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def pretty_print(raw_information):
+def pretty_print(raw_information, user_input):
 	'''
 	This is a pretty_printer which takes in the raw information obtained via the API endpoints and prints it in a easy to ready manner
 	'''
@@ -1013,6 +1013,8 @@ def pretty_print(raw_information):
 
 	prompt = pretty_print_prompt + f"""
 			This is the raw information: {raw_information} \n
+
+			This is the user's prompt: {user_input}
 					"""
 
 	try:
@@ -1042,7 +1044,7 @@ def pretty_print(raw_information):
 #																				API calling and parsing here
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def call_API(name_code_tuple, year=2024, game_type='R'):
+def call_API(name_code_tuple, year=2025, game_type='R'):
 	'''
 	This is the main calling API. It takes the player or the team's code, and retrieves information regarding it.
 	
