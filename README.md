@@ -22,6 +22,7 @@ Options page
 - [ ] In the second edition I am planning on annotating the video feed itself and displaying the entire video as an output. This will be much easier for the user to comprehend!
 - [ ] Figure out the sending and recieving of the buffer video
 - [ ] The novice users can enter a `mp4` video file that contains them practising their swings or pitches.
+- [ ] See if we can incorporate the curve of the ball during the pitch... 
 
 How do we compare? Will have to learn...
 
