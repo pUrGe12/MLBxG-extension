@@ -468,12 +468,19 @@ half_height = float(height // 2)
 
 screen_center = (half_width, half_height)
 
-alpha = float(np.arctan((x2-x1)/(y2-y1)))
+# The math is wrong
 
-print(alpha)
+alpha = float(np.arctan((x1-x2)/(y2-y1)))
+Delta_x = half_width-x1
 
-v_real_max = estimated_speed_max * 1/np.sin(alpha)                    # This necessarily implies that v_real is more than v_app which is true.
-v_real_min = estimated_speed_min * 1/np.sin(alpha)
+y0_normalised = half_height * float(np.cos(alpha))
+
+beta = float(np.arctan(Delta_x+half_height*float(np.tan(alpha)))/(y0_normalised))
+
+print(beta)
+
+v_real_max = estimated_speed_max * 1/np.sin(beta)                    # This necessarily implies that v_real is more than v_app which is true.
+v_real_min = estimated_speed_min * 1/np.sin(beta)
 
 print(f'Calculated real speeds max: {v_real_max}')
 print(f'Calculated real speeds min: {v_real_min}')
