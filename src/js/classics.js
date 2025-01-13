@@ -67,7 +67,7 @@ document.getElementById('name-form').addEventListener('submit', async (e) => {
     }
 
     // Show processing status
-    statusDiv.textContent = "Processing match name...";
+    statusDiv.textContent = "Processing the match, this may take some time...";
     statusDiv.style.display = 'block';
     statusDiv.className = 'upload-status success';
     
@@ -87,7 +87,7 @@ document.getElementById('name-form').addEventListener('submit', async (e) => {
         const data = await response.json();
         
         // Show success status
-        statusDiv.textContent = "Match name submitted successfully!";
+        statusDiv.textContent = "Match processed successfully!";
         statusDiv.className = 'upload-status success';
         
         // Show response section and content

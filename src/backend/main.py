@@ -107,6 +107,42 @@ def get_url(user_query):
 
     return link
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+#                                           This is the function that can calculate the speed for us
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def calculate_speed(video_path, min_confidence=0.5, max_displacement=100, min_sequence_length=7, pitch_distance_range=(55,65)):
+    load_tools = LoadTools()
+    model_weights = load_tools.load_model(model_alias='ball_trackingv4')
+    model = YOLO(model_weights)
+
+    tracker = BaseballTracker(
+    model=model,
+    min_confidence=0.3,         # 0.3 confidence works good enough, gives realistic predictions
+    max_displacement=100,       # adjust based on your video resolution
+    min_sequence_length=7,
+    pitch_distance_range=(50, 70)  # feet
+    )
+
+    # Process video
+    results = tracker.process_video(VideoPath) 
+
+    output = """"""
+
+    output += f"\nProcessed {results['total_frames']} frames at {results['fps']} FPS" + f"\n Found {len(results['sequences'])} valid ball sequences"
+
+    for i, speed_est in enumerate(results['speed_estimates'], 1):
+        output += f"""
+            \nSequence {i}:
+            Frames: {speed_est['start_frame']} to {speed_est['end_frame']}
+            Duration: {speed_est['time_duration']:.2f} seconds
+            Average confidence: {speed_est['average_confidence']:.3f}
+            Estimated speed: {speed_est['min_speed_mph']:.1f}""" + f""" to {speed_est['max_speed_mph']:.1f} mph
+                    
+            This was within the time frame: {speed_est['start_frame'] * 1/results['total_frames']} to {speed_est['end_frame'] * 1/results['total_frames']} 
+        """
+    return output
+
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #                                                                                       API endpoints
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -155,7 +191,7 @@ def process_input():
             print('Requires APIs')
 
             name_code_tuple = figure_out_code(team_code_mapping, player_code_mapping, user_input)
-            print(name_code_tuple)
+
             output = call_API(name_code_tuple)
 
             # processed_output = output
@@ -185,11 +221,10 @@ def process_input():
             with open("./input_files/received_video.webm", "wb") as fp:               # Saving this in the input files directory (hopefully this works)
                 fp.write(video_data)
 
-            # Convert webm to mp4 and save it
+            # Convert webm to mp4 and save it, cause we need to work with this format only.
             convert_webm_to_mp4("./input_files/received_video.webm", "./input_files/converted_input.mp4")
             
-            VideoPath = "./input_files/converted_input.mp4"
-
+            video_path = "./input_files/converted_input.mp4"
 
             # -------------------------------------------------------------------------------------------
             #               Now we need a logic to see if they're asking for speed or what
@@ -199,47 +234,8 @@ def process_input():
 
             if 'baseballspeed' in what_is_needed.strip().lower():
                 
-                # now we gotta process this, assuming we get the data as a mp4 data
-                load_tools = LoadTools()
-                model_weights = load_tools.load_model(model_alias='ball_trackingv4')
-                model = YOLO(model_weights)
-
-                tracker = BaseballTracker(
-                model=model,
-                min_confidence=0.3,         # 0.3 confidence works good enough, gives realistic predictions
-                max_displacement=100,       # adjust based on your video resolution
-                min_sequence_length=7,
-                pitch_distance_range=(50, 70)  # feet
-                )
-            
-                # Process video
-                results = tracker.process_video(VideoPath)                                  # This should probably work
-                
-                # Printing and saving results
-                output = """"""
-
-                print(f"\nProcessed {results['total_frames']} frames at {results['fps']} FPS")
-                print(f"Found {len(results['sequences'])} valid ball sequences")
-                
-                output += f"\nProcessed {results['total_frames']} frames at {results['fps']} FPS" + f"\n Found {len(results['sequences'])} valid ball sequences"
-
-                for i, speed_est in enumerate(results['speed_estimates'], 1):
-                    print(f"\nSequence {i}:")
-                    print(f"Frames: {speed_est['start_frame']} to {speed_est['end_frame']}")
-                    print(f"Duration: {speed_est['time_duration']:.2f} seconds")
-                    print(f"Average confidence: {speed_est['average_confidence']:.3f}")
-                    print(f"Estimated speed: {speed_est['min_speed_mph']:.1f} to "
-                          f"{speed_est['max_speed_mph']:.1f} mph")
-
-                    output += f"""
-            \nSequence {i}:
-            Frames: {speed_est['start_frame']} to {speed_est['end_frame']}
-            Duration: {speed_est['time_duration']:.2f} seconds
-            Average confidence: {speed_est['average_confidence']:.3f}
-            Estimated speed: {speed_est['min_speed_mph']:.1f}""" + f""" to {speed_est['max_speed_mph']:.1f} mph
-                    
-            This was within the time frame: {speed_est['start_frame'] * 1/results['total_frames']} to {speed_est['end_frame'] * 1/results['total_frames']} 
-                    """
+                # All other parameters are default
+                output = calculate_speed(video_path)
 
                 return jsonify({"response": output}), 200
             
@@ -341,55 +337,13 @@ def classics_video_processing():
         
         print(filename)
 
-        # Ensure upload directory exists and saving it
+        # Ensure upload directory exists and saving it. We'll keep the name as above so that its easy to process
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         video_file.save(file_path)
         
-        print('here')
-        # Process the video
-        load_tools = LoadTools()
-        model_weights = load_tools.load_model(model_alias='ball_trackingv4')
-        model = YOLO(model_weights)
-
-        tracker = BaseballTracker(
-        model=model,
-        min_confidence=0.3,         # 0.3 confidence works good enough, gives realistic predictions
-        max_displacement=100,       # adjust based on your video resolution
-        min_sequence_length=7,
-        pitch_distance_range=(50, 70)  # feet
-        )
-        
         SOURCE_VIDEO_PATH = f'/home/purge/Desktop/MLBxG-extension/src/backend/uploads/videos/{filename}'
-        print(SOURCE_VIDEO_PATH)
-        # Process video
-        results = tracker.process_video(SOURCE_VIDEO_PATH)
-        
-        # Printing and saving results
-        output = """"""
-
-        print(f"\nProcessed {results['total_frames']} frames at {results['fps']} FPS")
-        print(f"Found {len(results['sequences'])} valid ball sequences")
-        
-        output += f"\nProcessed {results['total_frames']} frames at {results['fps']} FPS" + f"\n Found {len(results['sequences'])} valid ball sequences"
-
-        for i, speed_est in enumerate(results['speed_estimates'], 1):
-            print(f"\nSequence {i}:")
-            print(f"Frames: {speed_est['start_frame']} to {speed_est['end_frame']}")
-            print(f"Duration: {speed_est['time_duration']:.2f} seconds")
-            print(f"Average confidence: {speed_est['average_confidence']:.3f}")
-            print(f"Estimated speed: {speed_est['min_speed_mph']:.1f} to "
-                  f"{speed_est['max_speed_mph']:.1f} mph")
-
-            output += f"""
-\nSequence {i}:
-Frames: {speed_est['start_frame']} to {speed_est['end_frame']}
-Duration: {speed_est['time_duration']:.2f} seconds
-Average confidence: {speed_est['average_confidence']:.3f}
-Estimated speed: {speed_est['min_speed_mph']:.1f}""" + f""" to {speed_est['max_speed_mph']:.1f} mph
-
-This was within the time frame: {speed_est['start_frame'] * 1/results['total_frames']} to {speed_est['end_frame'] * 1/results['total_frames']}
-"""
+        output = calculate_speed(SOURCE_VIDEO_PATH)
 
         return jsonify({                                                            # Also need to return uploaded message
             'message': 'Video analysed successfully, now running plan',
@@ -436,10 +390,19 @@ def classics_text_processing():
     }
 
     with YoutubeDL(ydl_opts) as ydl:
+        # Getting the filename first
+        video_info = ydl.extract_info(custom_url, download=False)
+        filename = ydl.prepare_filename(video_info)
+
         ydl.download([custom_url])
 
+    
+    SOURCE_VIDEO_PATH = filename
+
+    output = calculate_speed(SOURCE_VIDEO_PATH)
+
     return jsonify({
-        'message': f"Downloaded URL: {custom_url}"
+        'message': f"This is what we found: \n{output}"
         })
 
 
