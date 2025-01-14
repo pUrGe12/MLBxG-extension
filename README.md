@@ -22,16 +22,18 @@ Options page
 - [ ] In the second edition I am planning on annotating the video feed itself and displaying the entire video as an output. This will be much easier for the user to comprehend!
 - [ ] Figure out the sending and recieving of the buffer video
 - [ ] The novice users can enter a `mp4` video file that contains them practising their swings or pitches.
-- [ ] See if we can incorporate the curve of the ball during the pitch... 
+- [x] See if we can incorporate the curve of the ball during the pitch... (this we did using parabolic trajectory calculations)
+- [ ] Write the readme for the math and the implementation of speed calculation precisely! Explain the use of scale factor precisely
 
-How do we compare? Will have to learn...
+
+How do we compare swings? Will have to learn...
 
 # More things
 
 - [ ] Integrating velocity finder with panel.py
 - [ ] Creating a exit-velocity finder using bat-tracking
-- [ ] Update logic to handle different camera angles.
-- [ ] Run statcast on the downloaded youtube video
+- [ ] Update logic to handle different camera angles. (to some extent, the math works --> Incorporating the scale factor)
+- [x] Run statcast on the downloaded youtube video (at least the speed calculation works!)
 
 Developing an extension that can read your screen and give you live data updates and tips on your favourite baseball games! (With permission)
 
