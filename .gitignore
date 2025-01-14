@@ -3,6 +3,8 @@ test/camera_angle/ball_tracking/ball_trackingv4.pt
 test/camera_angle/ball_tracking/pitcher_hitter_catcher_detector_v4.pt
 test/big_weights/*
 src/backend/baseball_detect/ball_tracking/*
+src/backend/baseball_detect/bat_tracking/*
+
 src/backend/downloads_classical/*
 # Byte-compiled / optimized / DLL files
 __pycache__/

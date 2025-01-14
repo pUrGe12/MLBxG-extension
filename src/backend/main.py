@@ -431,12 +431,14 @@ def classics_text_processing():
 @app.route('/load-yolo-model/', methods=['POST'])
 def loading_yolo_models():
     load_tools = LoadTools()
-    model_weights = load_tools.load_model(model_alias='ball_trackingv4')
-    model = YOLO(model_weights)
+    model_weights1 = load_tools.load_model(model_alias='ball_trackingv4')
+    model1 = YOLO(model_weights1)
 
-    load_tools = LoadTools()
-    model_weights = load_tools.load_model(model_alias='phc_detector')
-    model = YOLO(model_weights)
+    model_weights2 = load_tools.load_model(model_alias='phc_detector')
+    model2 = YOLO(model_weights2)
+
+    model_weights3 = load_tools.load_model(model_alias='bat_tracking')
+    model3 = YOLO(model_weights3)
 
     return jsonify({
         'message': "loaded deeplearning model"

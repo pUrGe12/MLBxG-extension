@@ -73,7 +73,7 @@ class LoadTools:
         self.BDL_DATASET_API = "https://balldatalab.com/api/datasets/"
         self.yolo_model_aliases = {
             'phc_detector': './baseball_detect/ball_tracking/pitcher_hitter_catcher_detector_v4.txt',
-            'bat_tracking': 'models/YOLO/bat_tracking/model_weights/bat_tracking.txt',
+            'bat_tracking': './baseball_detect/bat_tracking/bat_tracking.txt',
             'ball_tracking': './baseball_detect/ball_tracking/ball_tracking.txt',
             'glove_tracking': 'models/YOLO/glove_tracking/model_weights/glove_tracking.txt',
             'ball_trackingv4': './baseball_detect/ball_tracking/ball_trackingv4.txt'
