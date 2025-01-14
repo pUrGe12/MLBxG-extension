@@ -43,7 +43,7 @@ import google.generativeai as genai
 from ultralytics import YOLO
 
 from baseball_detect.flow import LoadTools, BallDetection, BaseballTracker          # This will handle everything
-
+from baseball_detect.flow import calculate_pitcher_and_catcher
 # ---------------------------------------------------------------------------
 # Extraction model calling and implementation
 # ---------------------------------------------------------------------------
@@ -102,7 +102,22 @@ def get_url(user_query):
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def calculate_speed(video_path, min_confidence=0.5, max_displacement=100, min_sequence_length=7, pitch_distance_range=(55,65)):
+    # First load the phc detector and find coordinates for the pitcher and the catcher
     load_tools = LoadTools()
+    model_weights2 = load_tools.load_model(model_alias="phc_detector")
+    model2 = YOLO(model_weights2)
+
+    coordinates = calculate_pitcher_and_catcher(model2)                     # Returns coordinates as (x1, y1, x2, y2)
+    # x2, y2 is the pitcher and x1, y1 is the catcher
+    
+    x1, y2, x2, y2 = coordinates
+
+    scale_factor = float(np.sqrt((x2-x1)**2 + (y2-y1)**2)/(60.5))              # scale factor is pixel distance between those niggas divided by actual distance between the niggas
+    print(f"scale_factor: {scale_factor}")
+
+    beta = float(np.arctan(2*(x1-x2)/(y2-y1)))                              # The math is explained in the readme docs
+    print(f"sin(beta) = {np.sin(beta)}")
+
     model_weights = load_tools.load_model(model_alias='ball_trackingv4')
     model = YOLO(model_weights)
 
@@ -110,28 +125,43 @@ def calculate_speed(video_path, min_confidence=0.5, max_displacement=100, min_se
     model=model,
     min_confidence=0.5,         # 0.3 confidence works good enough, gives realistic predictions
     max_displacement=100,       # adjust based on your video resolution
-    min_sequence_length=7,
-    pitch_distance_range=(55, 65)  # feet
+    min_sequence_length=10,
+    pitch_distance_range=(60, 61)  # feet
     )
 
     # Process video
-    results = tracker.process_video(video_path) 
+    results = tracker.process_video(video_path, scale_factor) 
 
     output = """"""
 
     output += f"\nProcessed {results['total_frames']} frames at {results['fps']} FPS" + f"\n Found {len(results['sequences'])} valid ball sequences"
 
     for i, speed_est in enumerate(results['speed_estimates'], 1):
+        # Run the beta calculations for each frame
         output += f"""
             \nSequence {i}:
             Frames: {speed_est['start_frame']} to {speed_est['end_frame']}
             Duration: {speed_est['time_duration']:.2f} seconds
             Average confidence: {speed_est['average_confidence']:.3f}
             Estimated speed: {speed_est['min_speed_mph']:.1f}""" + f""" to {speed_est['max_speed_mph']:.1f} mph
-                    
-            This was within the time frame: {speed_est['start_frame'] * 1/results['fps']} to {speed_est['end_frame'] * 1/results['fps']} 
         """
+
+        estimated_speed_min = float(speed_est['min_speed_mph'])
+        estimated_speed_max = float(speed_est['max_speed_mph'])
+
+        if beta*180/3.1415926 > 10:                               # if the angle is less than 10 degree, then the calculations become absurd!
+            v_real_max = estimated_speed_max * 1/np.sin(beta)                    # This necessarily implies that v_real is more than v_app which is true.
+            v_real_min = estimated_speed_min * 1/np.sin(beta)
+            output += f"Estimated speed: {v_real_max:.1f}" + f" to {v_real_min:.1f} mph"
+
+        else:
+            output += f"Estimated speed: {estimated_speed_max:.1f}" + f" to {estimated_speed_min:.1f} mph"
+            print(f'real speed range: {estimated_speed_max, estimated_speed_min}')
+
+        output += f"This was within the time frame: {speed_est['start_frame'] * 1/results['fps']} to {speed_est['end_frame'] * 1/results['fps']}"
+
     return output
+
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #                                                                                       API endpoints

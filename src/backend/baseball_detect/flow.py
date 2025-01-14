@@ -440,49 +440,147 @@ class BaseballTracker:
             
         return sequences
     
-    def _calculate_speeds(
+    def _calculate_speeds(              # used scaling factor here, needs to be found using the catcher and the pitcher
         self, 
         sequences: List[List[BallDetection]], 
-        fps: float
+        fps: float, 
+        scale_factor: float  # Conversion factor: pixels to feet
     ) -> List[Dict]:
-        """Calculate speed estimates for each valid sequence."""
+        """Calculate speed estimates for each valid sequence, accounting for parabolic motion."""
         speed_estimates = []
-        
+
         for sequence in sequences:
-            # Calculate time duration
+            # Calculate time duration of the sequence
             time_duration = sequence[-1].timestamp - sequence[0].timestamp
-            
-            # Calculate pixel displacement using centers
-            start_center = self._get_box_center(sequence[0].box_coords)
-            end_center = self._get_box_center(sequence[-1].box_coords)
-            
-            pixel_displacement = np.sqrt(
-                (end_center[0] - start_center[0])**2 + 
-                (end_center[1] - start_center[1])**2
+
+            # Initialize total horizontal and vertical displacement
+            total_horizontal_displacement = 0.0
+            total_vertical_displacement = 0.0
+
+            # Loop through consecutive detections to calculate displacements
+            for i in range(len(sequence) - 1):
+                print('looping here!')
+                current_center = self._get_box_center(sequence[i].box_coords)
+                next_center = self._get_box_center(sequence[i + 1].box_coords)
+
+                # Calculate pixel displacements
+                dx = next_center[0] - current_center[0]  # Horizontal displacement
+                dy = next_center[1] - current_center[1]  # Vertical displacement
+
+                # Convert to real-world units using scale_factor
+                total_horizontal_displacement += abs(dx) * scale_factor
+                total_vertical_displacement += abs(dy) * scale_factor
+                print('used scale factor')
+
+            # Calculate observed pixel displacement in real-world distance
+            observed_displacement = np.sqrt(
+                total_horizontal_displacement**2 + total_vertical_displacement**2
             )
-            
-            # Estimate speeds using pitch distance range
-            min_speed = (self.pitch_distance_range[0] / time_duration)  # ft/s
-            max_speed = (self.pitch_distance_range[1] / time_duration)  # ft/s
-            
+
+            # Calculate minimum and maximum speeds using pitch distance range
+            min_speed = self.pitch_distance_range[0] / time_duration  # ft/s
+            max_speed = self.pitch_distance_range[1] / time_duration  # ft/s
+
+            # Convert to mph
+            min_speed_mph = min_speed * 0.681818  # Convert ft/s to mph
+            max_speed_mph = max_speed * 0.681818  # Convert ft/s to mph
+
             # Count interpolated frames
             interpolated_frames = sum(1 for d in sequence if d.interpolated)
-            
+
+            # Append results
             speed_estimates.append({
                 "sequence_length": len(sequence),
                 "interpolated_frames": interpolated_frames,
                 "time_duration": time_duration,
-                "pixel_displacement": pixel_displacement,
+                "horizontal_displacement_ft": total_horizontal_displacement,
+                "vertical_displacement_ft": total_vertical_displacement,
+                "observed_displacement_ft": observed_displacement,
                 "min_speed_ft_per_sec": min_speed,
                 "max_speed_ft_per_sec": max_speed,
-                "min_speed_mph": min_speed * 0.681818,  # convert ft/s to mph
-                "max_speed_mph": max_speed * 0.681818,  # convert ft/s to mph
+                "min_speed_mph": min_speed_mph,
+                "max_speed_mph": max_speed_mph,
                 "start_frame": sequence[0].frame_number,
                 "end_frame": sequence[-1].frame_number,
                 "average_confidence": np.mean([d.confidence for d in sequence])
             })
-            
+
         return speed_estimates
+
+
+def calculate_pitcher_and_catcher(model2):
+    player_positions = defaultdict(list)
+    player_positions_normalized = defaultdict(list)
+
+    # These are the class IDs for detection as defined by the model itself. 1-pitcher, 2-catcher. Not that it matters, cause we reference it by name. 
+    # Found these using another testing code.
+    PITCHER_CLASS_ID = 1
+    CATCHER_CLASS_ID = 2
+
+    # Run prediction on the source video and calculate positions
+    results = model2.predict(source=SOURCE_VIDEO_PATH, save=False)
+
+    # Process each frame
+    for frame_idx, r in enumerate(results):
+        frame_boxes = {
+            'pitcher': None,
+            'catcher': None
+        }
+        
+        # Get frame dimensions
+        if hasattr(r, 'orig_img'):
+            frame_height, frame_width = r.orig_img.shape[:2]
+        else:
+            print('using these!')
+            # If we can't get original image dimensions, you'll need to specify them. This is the default size for many screens. optionally we can use tkinter or something and find it dynamically
+            frame_width = 1920
+            frame_height = 1080
+        
+        # Process detections in current frame
+        for box in r.boxes:
+            class_id = int(box.cls[0])
+            box_data = box.xywh.numpy()[0]  # Convert to numpy, get first (and only) box
+            
+            # Store both absolute and normalized coordinates
+            center_absolute = (box_data[0], box_data[1])  # x, y coordinates
+            center_normalized = (box_data[0] / frame_width, box_data[1] / frame_height)  # normalized coordinates
+            
+            if class_id == PITCHER_CLASS_ID:
+                frame_boxes['pitcher'] = (center_absolute, center_normalized)
+            elif class_id == CATCHER_CLASS_ID:
+                frame_boxes['catcher'] = (center_absolute, center_normalized)
+        
+        for player_type, centers in frame_boxes.items():
+            if centers is not None:
+                center_absolute, center_normalized = centers
+                player_positions[player_type].append(center_absolute)
+                player_positions_normalized[player_type].append(center_normalized)
+
+    average_positions = {}
+    average_positions_normalized = {}
+
+    for player_type, positions in player_positions.items():
+        if positions:
+            # Calculate absolute average
+            positions_array = np.array(positions)
+            average_positions[player_type] = np.mean(positions_array, axis=0)
+            
+            # Calculate normalized average
+            positions_array_norm = np.array(player_positions_normalized[player_type])
+            average_positions_normalized[player_type] = np.mean(positions_array_norm, axis=0)
+
+    # print("\nAbsolute Coordinates (in pixels):")
+    # for player_type, avg_pos in average_positions.items():
+    #     print(f"Average {player_type} position: x={avg_pos[0]:.2f}, y={avg_pos[1]:.2f}")
+
+    # x2, y2 is the pitcher and x1, y1 is the catcher
+    x1 = float(average_positions.get('catcher')[0])
+    y1 = float(average_positions.get('catcher')[1])
+
+    x2 = float(average_positions.get('pitcher')[0])
+    y2 = float(average_positions.get('pitcher')[1])
+
+    return (x1, y1, x2, y2)
 
 # Example usage
 # if __name__ == "__main__":
