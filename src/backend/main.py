@@ -104,8 +104,10 @@ def get_url(user_query):
 def calculate_speed(video_path, min_confidence=0.5, max_displacement=100, min_sequence_length=7, pitch_distance_range=(55,65)):
     # First load the phc detector and find coordinates for the pitcher and the catcher
     SOURCE_VIDEO_PATH = video_path
+    
     print('here')
     print(SOURCE_VIDEO_PATH)
+
     coordinates = calculate_pitcher_and_catcher(SOURCE_VIDEO_PATH)                     # Returns coordinates as (x1, y1, x2, y2)
     # x2, y2 is the pitcher and x1, y1 is the catcher
     
@@ -123,12 +125,13 @@ def calculate_speed(video_path, min_confidence=0.5, max_displacement=100, min_se
 
     tracker = BaseballTracker(
     model=model,
-    min_confidence=0.5,         # 0.3 confidence works good enough, gives realistic predictions
+    min_confidence=0.3,         # 0.3 confidence works good enough, gives realistic predictions
     max_displacement=100,       # adjust based on your video resolution
-    min_sequence_length=10,
+    min_sequence_length=7,
     pitch_distance_range=(60, 61)  # feet
     )
 
+    print('processing video')
     # Process video
     results = tracker.process_video(video_path, scale_factor) 
 
@@ -142,8 +145,7 @@ def calculate_speed(video_path, min_confidence=0.5, max_displacement=100, min_se
             \nSequence {i}:
             Frames: {speed_est['start_frame']} to {speed_est['end_frame']}
             Duration: {speed_est['time_duration']:.2f} seconds
-            Average confidence: {speed_est['average_confidence']:.3f}
-            Estimated speed: {speed_est['min_speed_mph']:.1f}""" + f""" to {speed_est['max_speed_mph']:.1f} mph
+            Average confidence: {speed_est['average_confidence']:.3f}\n
         """
 
         estimated_speed_min = float(speed_est['min_speed_mph'])
@@ -152,11 +154,11 @@ def calculate_speed(video_path, min_confidence=0.5, max_displacement=100, min_se
         if beta*180/3.1415926 > 10:                               # if the angle is less than 10 degree, then the calculations become absurd!
             v_real_max = estimated_speed_max * 1/np.sin(beta)                    # This necessarily implies that v_real is more than v_app which is true.
             v_real_min = estimated_speed_min * 1/np.sin(beta)
-            output += f"Estimated speed: {v_real_max:.1f}" + f" to {v_real_min:.1f} mph"
+            output += f"\nEsttimated speed: {v_real_max:.1f}" + f" to {v_real_min:.1f} mph"
 
         else:
-            output += f"Estimated speed: {estimated_speed_max:.1f}" + f" to {estimated_speed_min:.1f} mph"
-            print(f'real speed range: {estimated_speed_max, estimated_speed_min}')
+            output += f"\nEstimated speed: {estimated_speed_max:.1f}" + f" to {estimated_speed_min:.1f} mph"
+            print(f'Estimated speed range: {estimated_speed_max, estimated_speed_min}')
 
         output += f"This was within the time frame: {speed_est['start_frame'] * 1/results['fps']} to {speed_est['end_frame'] * 1/results['fps']}"
 

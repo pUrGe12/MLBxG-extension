@@ -287,7 +287,7 @@ class BaseballTracker:
         """Organize detections into a dictionary keyed by frame number."""
         return {d.frame_number: d for d in detections}
     
-    def process_video(self, video_path: str) -> Dict:
+    def process_video(self, video_path: str, scale_factor: float) -> Dict:
         """Process video and return ball tracking data and speed estimates."""
         cap = cv2.VideoCapture(video_path)
         fps = cap.get(cv2.CAP_PROP_FPS)
@@ -343,7 +343,7 @@ class BaseballTracker:
         sequences = self._find_continuous_sequences(all_detections)
         
         # Calculate speeds for valid sequences
-        speed_estimates = self._calculate_speeds(sequences, fps)
+        speed_estimates = self._calculate_speeds(sequences, fps, scale_factor)
         
         return {
             "total_frames": frame_count,
