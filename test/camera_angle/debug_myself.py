@@ -144,7 +144,7 @@ class BaseballTracker:
         """Organize detections into a dictionary keyed by frame number."""
         return {d.frame_number: d for d in detections}
     
-    def process_video(self, video_path: str) -> Dict:
+    def process_video(self, video_path: str, scale_factor: float) -> Dict:
         """Process video and return ball tracking data and speed estimates."""
         cap = cv2.VideoCapture(video_path)
         fps = cap.get(cv2.CAP_PROP_FPS)
@@ -200,7 +200,7 @@ class BaseballTracker:
         sequences = self._find_continuous_sequences(all_detections)
         
         # Calculate speeds for valid sequences
-        speed_estimates = self._calculate_speeds(sequences, fps)
+        speed_estimates = self._calculate_speeds(sequences, fps, scale_factor)
         
         return {
             "total_frames": frame_count,
@@ -300,73 +300,75 @@ class BaseballTracker:
     def _calculate_speeds(
         self, 
         sequences: List[List[BallDetection]], 
-        fps: float
+        fps: float, 
+        scale_factor: float  # Conversion factor: pixels to feet
     ) -> List[Dict]:
-        """Calculate speed estimates for each valid sequence."""
+        """Calculate speed estimates for each valid sequence, accounting for parabolic motion."""
         speed_estimates = []
-        
+
         for sequence in sequences:
-            # Calculate time duration
+            # Calculate time duration of the sequence
             time_duration = sequence[-1].timestamp - sequence[0].timestamp
-            
-            # Calculate pixel displacement using centers
-            start_center = self._get_box_center(sequence[0].box_coords)
-            end_center = self._get_box_center(sequence[-1].box_coords)
-            
-            pixel_displacement = np.sqrt(
-                (end_center[0] - start_center[0])**2 + 
-                (end_center[1] - start_center[1])**2
+
+            # Initialize total horizontal and vertical displacement
+            total_horizontal_displacement = 0.0
+            total_vertical_displacement = 0.0
+
+            # Loop through consecutive detections to calculate displacements
+            for i in range(len(sequence) - 1):
+                print('looping here!')
+                current_center = self._get_box_center(sequence[i].box_coords)
+                next_center = self._get_box_center(sequence[i + 1].box_coords)
+
+                # Calculate pixel displacements
+                dx = next_center[0] - current_center[0]  # Horizontal displacement
+                dy = next_center[1] - current_center[1]  # Vertical displacement
+
+                # Convert to real-world units using scale_factor
+                total_horizontal_displacement += abs(dx) * scale_factor
+                total_vertical_displacement += abs(dy) * scale_factor
+                print('used scale factor')
+
+            # Calculate observed pixel displacement in real-world distance
+            observed_displacement = np.sqrt(
+                total_horizontal_displacement**2 + total_vertical_displacement**2
             )
-            
-            # Estimate speeds using pitch distance range
-            min_speed = (self.pitch_distance_range[0] / time_duration)  # ft/s
-            max_speed = (self.pitch_distance_range[1] / time_duration)  # ft/s
-            
+
+            # Calculate minimum and maximum speeds using pitch distance range
+            min_speed = self.pitch_distance_range[0] / time_duration  # ft/s
+            max_speed = self.pitch_distance_range[1] / time_duration  # ft/s
+
+            # Convert to mph
+            min_speed_mph = min_speed * 0.681818  # Convert ft/s to mph
+            max_speed_mph = max_speed * 0.681818  # Convert ft/s to mph
+
             # Count interpolated frames
             interpolated_frames = sum(1 for d in sequence if d.interpolated)
-            
+
+            # Append results
             speed_estimates.append({
                 "sequence_length": len(sequence),
                 "interpolated_frames": interpolated_frames,
                 "time_duration": time_duration,
-                "pixel_displacement": pixel_displacement,
+                "horizontal_displacement_ft": total_horizontal_displacement,
+                "vertical_displacement_ft": total_vertical_displacement,
+                "observed_displacement_ft": observed_displacement,
                 "min_speed_ft_per_sec": min_speed,
                 "max_speed_ft_per_sec": max_speed,
-                "min_speed_mph": min_speed * 0.681818,  # convert ft/s to mph
-                "max_speed_mph": max_speed * 0.681818,  # convert ft/s to mph
+                "min_speed_mph": min_speed_mph,
+                "max_speed_mph": max_speed_mph,
                 "start_frame": sequence[0].frame_number,
                 "end_frame": sequence[-1].frame_number,
                 "average_confidence": np.mean([d.confidence for d in sequence])
             })
-            
+
         return speed_estimates
 
 
 SOURCE_VIDEO_PATH = "./input/baseball_3.mp4"
 
-load_tools = LoadTools()
-model_weights1 = load_tools.load_model(model_alias='ball_trackingv4')
-model1 = YOLO(model_weights1)
-
-tracker = BaseballTracker(
-        model=model1,
-        min_confidence=0.2,         # 0.2 confidence works good enough, because its only going to detect baseballs and there are rarely anything else. 
-        max_displacement=100,       # adjust based on your video resolution
-        min_sequence_length=10,
-        pitch_distance_range=(55, 65)  # feet
-    )
-
-results = tracker.process_video(SOURCE_VIDEO_PATH)
-
-# Asumming only one valid sequence is present
-for i, speed_est in enumerate(results['speed_estimates'], 1):
-    estimated_speed_min = float(speed_est['min_speed_mph'])
-    estimated_speed_max = float(speed_est['max_speed_mph'])
-
-# Slight slight issue! This only works if estimated_speed_min/max are in the range 0.25 to 0.3! This is probably my calculations of velocity.
-
 # -------------------------------------------------------------------------------------------------------------------------------------
-#       Here we have already run the model and established the speeds. Now we run a new model for detecting catchers and pitchers
+#       First calculating the positions of the pitcher and the catcher cause this will help in calculating scale factor
 # -------------------------------------------------------------------------------------------------------------------------------------
 
 print('\n')
@@ -453,34 +455,93 @@ y1 = float(average_positions.get('catcher')[1])
 x2 = float(average_positions.get('pitcher')[0])
 y2 = float(average_positions.get('pitcher')[1])
 
-# Everyone may have different screen sizes, so making this more adaptive
-import tkinter as tk
-import numpy as np
-root = tk.Tk()
-width = root.winfo_screenwidth()
-height = root.winfo_screenheight()
+print(f'x1: {x1}')
+print(f'y1: {y1}')
+print(f'x2: {x2}')
+print(f'y2: {y2}')
 
-print("Screen width:", width)
-print("Screen height:", height)
+scale_factor = float(np.sqrt((x2-x1)**2 + (y2-y1)**2)/(60.5))              # scale factor is pixel distance between those niggas divided by actual distance between the niggas
 
-half_width = float(width // 2)
-half_height = float(height // 2)
 
-screen_center = (half_width, half_height)
+print(f"scale_factor: {scale_factor}")
+
+beta = float(np.arctan(2*(x1-x2)/(y2-y1)))
+
+print(f"sin(beta) = {np.sin(beta)}")
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------
+#                  Now calculating the estimated speed of the ball (both its x component and y compenent assuming a parabolic trajectory)
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+load_tools = LoadTools()
+model_weights1 = load_tools.load_model(model_alias='ball_trackingv4')
+model1 = YOLO(model_weights1)
+
+tracker = BaseballTracker(
+        model=model1,
+        min_confidence=0.2,         # 0.2 confidence works good enough, because its only going to detect baseballs and there are rarely anything else. 
+        max_displacement=100,       # adjust based on your video resolution
+        min_sequence_length=10,
+        pitch_distance_range=(60, 61)  # feet
+    )
+
+results = tracker.process_video(SOURCE_VIDEO_PATH, scale_factor)
+
+# Asumming only one valid sequence is present                       THIS MAY NEED SIGNIFICANT CHANGES!
+for i, speed_est in enumerate(results['speed_estimates'], 1):
+    estimated_speed_min = float(speed_est['min_speed_mph'])
+    estimated_speed_max = float(speed_est['max_speed_mph'])
+
+
+print(f"estimated_speed_min: {estimated_speed_min}")
+print(f"estimated_speed_max: {estimated_speed_max}")
+
+if beta*180/3.1415926 > 10:                               # if the angle is less than 10 degree, then the calculations become absurd!
+    v_real_max = estimated_speed_max * 1/np.sin(beta)                    # This necessarily implies that v_real is more than v_app which is true.
+    v_real_min = estimated_speed_min * 1/np.sin(beta)
+
+    print(f'Calculated real speeds max: {v_real_max}')
+    print(f'Calculated real speeds min: {v_real_min}')
+
+else:
+    print(f'real speed range: {estimated_speed_max, estimated_speed_min}')
+
+# -----------------------------------------------------------------------------------------------------------------------
+#                           Test stuff
+# -----------------------------------------------------------------------------------------------------------------------
+
+# # Everyone may have different screen sizes, so making this more adaptive
+# import tkinter as tk
+# import numpy as np
+# root = tk.Tk()
+# width = root.winfo_screenwidth()
+# height = root.winfo_screenheight()
+
+# print("Screen width:", width)
+# print("Screen height:", height)
+
+# half_width = float(width // 2)
+# half_height = float(height // 2)
+
+# screen_center = (half_width, half_height)
 
 # The math is wrong
 
-alpha = float(np.arctan((x1-x2)/(y2-y1)))
-Delta_x = half_width-x1
+# alpha = float(np.arctan((x1-x2)/(y2-y1)))
+# Delta_x = half_width-x1
 
-y0_normalised = half_height * float(np.cos(alpha))
+# y0_normalised = half_height * float(np.cos(alpha))
 
-beta = float(np.arctan(Delta_x+half_height*float(np.tan(alpha)))/(y0_normalised))
+# beta = float(np.arctan(Delta_x+half_height*float(np.tan(alpha)))/(y0_normalised))
 
-print(beta)
+# print(beta)
 
-v_real_max = estimated_speed_max * 1/np.sin(beta)                    # This necessarily implies that v_real is more than v_app which is true.
-v_real_min = estimated_speed_min * 1/np.sin(beta)
+# import numpy as np
 
-print(f'Calculated real speeds max: {v_real_max}')
-print(f'Calculated real speeds min: {v_real_min}')
+# x2 = 684.06
+# y2 = 657.83
+# x1 = 684.88
+# y1 = 347.57
+
+# estimated_speed_min = 70
+# estimated_speed_max = 90
