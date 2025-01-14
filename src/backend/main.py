@@ -103,14 +103,13 @@ def get_url(user_query):
 
 def calculate_speed(video_path, min_confidence=0.5, max_displacement=100, min_sequence_length=7, pitch_distance_range=(55,65)):
     # First load the phc detector and find coordinates for the pitcher and the catcher
-    load_tools = LoadTools()
-    model_weights2 = load_tools.load_model(model_alias="phc_detector")
-    model2 = YOLO(model_weights2)
-
-    coordinates = calculate_pitcher_and_catcher(model2)                     # Returns coordinates as (x1, y1, x2, y2)
+    SOURCE_VIDEO_PATH = video_path
+    print('here')
+    print(SOURCE_VIDEO_PATH)
+    coordinates = calculate_pitcher_and_catcher(SOURCE_VIDEO_PATH)                     # Returns coordinates as (x1, y1, x2, y2)
     # x2, y2 is the pitcher and x1, y1 is the catcher
     
-    x1, y2, x2, y2 = coordinates
+    x1, y1, x2, y2 = coordinates
 
     scale_factor = float(np.sqrt((x2-x1)**2 + (y2-y1)**2)/(60.5))              # scale factor is pixel distance between those niggas divided by actual distance between the niggas
     print(f"scale_factor: {scale_factor}")
@@ -118,6 +117,7 @@ def calculate_speed(video_path, min_confidence=0.5, max_displacement=100, min_se
     beta = float(np.arctan(2*(x1-x2)/(y2-y1)))                              # The math is explained in the readme docs
     print(f"sin(beta) = {np.sin(beta)}")
 
+    load_tools = LoadTools()
     model_weights = load_tools.load_model(model_alias='ball_trackingv4')
     model = YOLO(model_weights)
 
@@ -335,7 +335,7 @@ from werkzeug.utils import secure_filename                              # Adding
 @app.route('/classics-video/', methods=['POST'])
 def classics_video_processing():
     '''
-    Video processing essentially means applying the yolo model and computing the statcast data.
+    This is where the user is suppossed to enter the video as a mp4 file.
 
     We additionally wanna make sure that the entered file is mp4 itself! Not to have a php file being executed here and my laptop becoming compromised!
     '''
@@ -430,6 +430,10 @@ def classics_text_processing():
 def loading_yolo_models():
     load_tools = LoadTools()
     model_weights = load_tools.load_model(model_alias='ball_trackingv4')
+    model = YOLO(model_weights)
+
+    load_tools = LoadTools()
+    model_weights = load_tools.load_model(model_alias='phc_detector')
     model = YOLO(model_weights)
 
     return jsonify({

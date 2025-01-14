@@ -72,7 +72,7 @@ class LoadTools:
         self.BDL_MODEL_API = "https://balldatalab.com/api/models/"
         self.BDL_DATASET_API = "https://balldatalab.com/api/datasets/"
         self.yolo_model_aliases = {
-            'phc_detector': 'models/YOLO/pitcher_hitter_catcher_detector/model_weights/pitcher_hitter_catcher_detector_v4.txt',
+            'phc_detector': './baseball_detect/ball_tracking/pitcher_hitter_catcher_detector_v4.txt',
             'bat_tracking': 'models/YOLO/bat_tracking/model_weights/bat_tracking.txt',
             'ball_tracking': './baseball_detect/ball_tracking/ball_tracking.txt',
             'glove_tracking': 'models/YOLO/glove_tracking/model_weights/glove_tracking.txt',
@@ -508,7 +508,12 @@ class BaseballTracker:
         return speed_estimates
 
 
-def calculate_pitcher_and_catcher(model2):
+def calculate_pitcher_and_catcher(SOURCE_VIDEO_PATH):
+    print('here')
+    load_tools = LoadTools()
+    model_weights2 = load_tools.load_model(model_alias="phc_detector")
+    model2 = YOLO(model_weights2)
+
     player_positions = defaultdict(list)
     player_positions_normalized = defaultdict(list)
 
@@ -580,6 +585,7 @@ def calculate_pitcher_and_catcher(model2):
     x2 = float(average_positions.get('pitcher')[0])
     y2 = float(average_positions.get('pitcher')[1])
 
+    print('coordinates found')
     return (x1, y1, x2, y2)
 
 # Example usage
