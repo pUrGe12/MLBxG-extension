@@ -24,6 +24,7 @@ Options page
 - [ ] The novice users can enter a `mp4` video file that contains them practising their swings or pitches.
 - [x] See if we can incorporate the curve of the ball during the pitch... (this we did using parabolic trajectory calculations)
 - [ ] Write the readme for the math and the implementation of speed calculation precisely! Explain the use of scale factor precisely
+- [ ] Create a schedule parser
 
 
 How do we compare swings? Will have to learn...
