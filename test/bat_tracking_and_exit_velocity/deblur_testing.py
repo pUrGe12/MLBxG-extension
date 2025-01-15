@@ -19,7 +19,7 @@ def deblur_frame(frame, psf, iterations=30):
     # Perform Richardson-Lucy deconvolution
     deblurred = np.zeros_like(frame)
     for c in range(frame.shape[2]):  # Apply for each channel
-        deblurred[..., c] = richardson_lucy(frame[..., c], psf, iterations=iterations)
+        deblurred[..., c] = richardson_lucy(frame[..., c], psf)
     # Scale back to [0, 255]
     return np.clip(deblurred * 255, 0, 255).astype(np.uint8)
 
