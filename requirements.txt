@@ -19,6 +19,7 @@ deepsort
 pandas
 
 scikit-learn==1.5.2
+scikit-image
 
 gunicorn
 Flask-Cors
