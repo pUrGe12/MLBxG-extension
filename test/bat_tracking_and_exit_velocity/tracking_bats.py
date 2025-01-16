@@ -15,8 +15,13 @@ from collections import defaultdict
 
 from scipy.interpolate import UnivariateSpline
 
-import matplotlib.pyplot as plt
+import os
+os.environ['QT_QPA_PLATFORM'] = 'xcb'
 
+import matplotlib
+matplotlib.use('Agg')  # Use non-GUI backend
+
+import matplotlib.pyplot as plt
 
 class LoadTools:
     def __init__(self):
@@ -119,7 +124,7 @@ class BatTracker:
         plt.title("Plotting the trajectories")
         plt.legend()
         plt.grid()
-        plt.show()
+        plt.savefig("./figures/bat_trajectory.png")
 
 
     def _plot_splines(self, x_positions, y_positions, x_spline, y_spline, time_x):
@@ -135,7 +140,7 @@ class BatTracker:
         plt.title("Trajectory with Spline Fit")
         plt.legend()
         plt.grid()
-        plt.show()
+        plt.savefig("./figures/spline_interpolated.png")
 
 
     def _calculate_splines(self, list_of_detections: List[BatDetection], frame_rate, correction_factor):
@@ -190,7 +195,7 @@ class BatTracker:
         plt.title("Speed Over Time")
         plt.legend()
         plt.grid()
-        plt.show()
+        plt.savefig("./figures/speed_plot.png")
 
 
     def _calculate_speed(self, splines_tuple: Tuple[UnivariateSpline, UnivariateSpline], time):
