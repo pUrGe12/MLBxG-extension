@@ -13,7 +13,10 @@ import numpy as np
 from dataclasses import dataclass
 from collections import defaultdict
 
-from scipy.interpolate import CubicSpline
+from scipy.interpolate import UnivariateSpline
+
+import matplotlib.pyplot as plt
+
 
 class LoadTools:
     def __init__(self):
@@ -81,7 +84,7 @@ class BatTracker:
     def __init__(
         self, 
         model=YOLO, 
-        min_confidence = 0.3,
+        min_confidence = 0.1,                   # To get more detections, we can lower this (cause its unlikely that the model will find something BAT like)
         ):                                       # Since, we're using splines
         self.model = model
         self.min_confidence = min_confidence
@@ -91,8 +94,51 @@ class BatTracker:
         x1, y1, x2, y2 = box_coords[0]
         return ((x1 + x2) / 2, (y1 + y2) / 2)
 
+    def _get_average_correction_factor(self, list_of_detections: List[BatDetection]) -> Tuple[float, float]:
+        average_bat_length_in_ft = 33*0.0833333                           # This is in feet
 
-    def _calculate_splines(self, list_of_detections: List[BatDetection], frame_rate):
+        ratio_list = []
+        for detection in list_of_detections:
+            x1, y1, x2, y2 = detection.box_coords[0]
+            # These are the box corners
+            pixel_length = float(np.sqrt((x1-x2)**2 + (y1-y2)**2))
+
+            ratio_pixel_to_feet = float(pixel_length / average_bat_length_in_ft)
+            ratio_list.append(ratio_pixel_to_feet)
+            print('added')
+
+        average_ratio_pixel_to_feet = sum(ratio_list) / len(ratio_list)
+
+        return average_ratio_pixel_to_feet
+
+    def _plot_trajectories(self, x_positions, y_positions):
+        plt.figure(figsize=(10, 6))
+        plt.plot(x_positions, y_positions, 'o-', label="Raw Detections", color="blue", alpha=0.7)
+        plt.xlabel("X Position (ft)")
+        plt.ylabel("Y Position (ft)")
+        plt.title("Plotting the trajectories")
+        plt.legend()
+        plt.grid()
+        plt.show()
+
+
+    def _plot_splines(self, x_positions, y_positions, x_spline, y_spline, time_x):
+        t_fine = np.linspace(time_x[0], time_x[-1], 1000)  # Fine-grained time for smooth spline
+        x_fine = x_spline(t_fine)
+        y_fine = y_spline(t_fine)
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(x_positions, y_positions, 'o', label="Raw Detections", color="blue", alpha=0.7)
+        plt.plot(x_fine, y_fine, '-', label="Spline Fit", color="red", linewidth=2)
+        plt.xlabel("X Position (ft)")
+        plt.ylabel("Y Position (ft)")
+        plt.title("Trajectory with Spline Fit")
+        plt.legend()
+        plt.grid()
+        plt.show()
+
+
+    def _calculate_splines(self, list_of_detections: List[BatDetection], frame_rate, correction_factor):
         '''
         Here we take as input the list of all the detections and calculate the x spline and y spline from it. This directly returns the x_spline and y_spline.
 
@@ -102,41 +148,68 @@ class BatTracker:
         x_positions = []
         y_positions = []
         
+        print('plotting trajectories')
+        self._plot_trajectories(x_positions, y_positions)
+
         for detection in list_of_detections:
             x, y = self._get_box_center(detection.box_coords)
-            print(f"{x}, {y} are the coordinates of the center in this frame -- Bat's center of gravity")
+            # print(f"{x}, {y} are the coordinates of the center in this frame (pixels) -- Bat's center of gravity")
+            # print(f"{x/correction_factor }, {y/correction_factor} are the coordinates of the center in this frame (ft) -- Bat's center of gravity")
 
             # Since we are taking a differential it shouldn't matter at all
-            x_positions.append(x)
-            y_positions.append(y)
+            x_positions.append(x/correction_factor)
+            y_positions.append(y/correction_factor)
 
         # Should be the same...
         time_x = np.linspace(0, len(x_positions) / frame_rate, len(x_positions))              
         time_y = np.linspace(0, len(y_positions) / frame_rate, len(y_positions))
-        print(f'this is time x: {time_x}')
-        print(f'this is time y: {time_y}')
+        # print(f'this is time x: {time_x}')
+        # print(f'this is time y: {time_y}')
 
-        x_spline = CubicSpline(time_x, x_positions)
-        y_spline = CubicSpline(time_y, y_positions)
+        x_spline = UnivariateSpline(time_x, x_positions, s = 1)             # Setting a smoothing factor to ensure that we don't fit the data exactly (as the data is noisy!)
+        y_spline = UnivariateSpline(time_y, y_positions, s = 1)
+
+        print('plotting spines')
+        self._plot_splines(x_positions, y_positions, x_spline, y_spline, time_x)
 
         return (x_spline, y_spline, time_x, time_y)
 
 
-    def _calculate_speed(self, splines_tuple: Tuple[CubicSpline, CubicSpline], time):
+    def _plot_speed(self, speed, t_fine):
+        """
+        The objective is to look out for:
+
+        1. Smooth speed changes are expected
+        2. Large spikes may indicate noise in the trajectory.
+        """
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(t_fine, speed, label="Speed (ft/s)", color="green")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Speed (ft/s)")
+        plt.title("Speed Over Time")
+        plt.legend()
+        plt.grid()
+        plt.show()
+
+
+    def _calculate_speed(self, splines_tuple: Tuple[UnivariateSpline, UnivariateSpline], time):
         '''
         Takes the two splines wrt time and from those calculates their time derivates to find the fastest speed
         Here I am using a finer time array (now we can cause we basically have a function mapping from time to x and y coordinates) to take finer derivatives
         
         Returns the maximum speed from the speed array
         '''
-        x_spline, y_spline = splines_tuple              # decompose it
+        x_spline, y_spline = splines_tuple              # decompose it. These splines are based on ft calculations itself
 
         t_fine = np.linspace(time[0], time[-1], 1000)  # Fine-grained time array for better resolution
         dx_dt = x_spline.derivative()(t_fine)
         dy_dt = y_spline.derivative()(t_fine)
 
-        speed = np.sqrt(dx_dt**2 + dy_dt**2)                # This is an array
-        print(f"This is the speed array: {speed}")
+        speed = np.sqrt(dx_dt**2 + dy_dt**2)                # This is an array of ft speed itself
+        
+        print('plotting speeds')
+        self._plot_speed(speed, t_fine)
 
         return np.max(speed)
 
@@ -178,7 +251,9 @@ class BatTracker:
 
         cap.release()
 
-        x_spline, y_spline, time_x, time_y = self._calculate_splines(all_detections, fps)
+        average_correction_factor = self._get_average_correction_factor(all_detections)
+
+        x_spline, y_spline, time_x, time_y = self._calculate_splines(all_detections, fps, average_correction_factor)
 
         max_speed = self._calculate_speed((x_spline, y_spline), time_x)                     # Assuming them to be the same    
 
@@ -194,7 +269,7 @@ The basic idea is as follows:
 '''
 
 if __name__ == "__main__":
-    SOURCE_VIDEO_PATH = "./baseball_3.mp4"
+    SOURCE_VIDEO_PATH = "./input/baseball_2.mp4"
 
     load_tools = LoadTools()
     model_weights = load_tools.load_model(model_alias='bat_tracking')
@@ -207,5 +282,4 @@ if __name__ == "__main__":
 
     results = tracker.process_video(SOURCE_VIDEO_PATH)
 
-    print(f'max bat swing speed in pixels per second was: {results}')
-    print(f'Approximate real speed in ft/s was: {results}/5.5')
+    print(f'max bat swing speed in ft per second was: {results}')
