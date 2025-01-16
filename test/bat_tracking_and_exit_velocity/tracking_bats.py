@@ -118,13 +118,14 @@ class BatTracker:
 
     def _plot_trajectories(self, x_positions, y_positions):
         plt.figure(figsize=(10, 6))
-        plt.plot(x_positions, y_positions, 'o-', label="Raw Detections", color="blue", alpha=0.7)
+        plt.plot(x_positions, y_positions[::-1], 'o-', label="Raw Detections", color="blue", alpha=0.7)
         plt.xlabel("X Position (ft)")
         plt.ylabel("Y Position (ft)")
         plt.title("Plotting the trajectories")
+        plt.gca().invert_yaxis()
         plt.legend()
         plt.grid()
-        plt.savefig("./figures/bat_trajectory.png")
+        plt.savefig("./figures/bat_trajectory_3.png")
 
 
     def _plot_splines(self, x_positions, y_positions, x_spline, y_spline, time_x):
@@ -138,9 +139,10 @@ class BatTracker:
         plt.xlabel("X Position (ft)")
         plt.ylabel("Y Position (ft)")
         plt.title("Trajectory with Spline Fit")
+        plt.gca().invert_yaxis()
         plt.legend()
         plt.grid()
-        plt.savefig("./figures/spline_interpolated.png")
+        plt.savefig("./figures/spline_interpolated_3.png")
 
 
     def _calculate_splines(self, list_of_detections: List[BatDetection], frame_rate, correction_factor):
@@ -152,9 +154,6 @@ class BatTracker:
 
         x_positions = []
         y_positions = []
-        
-        print('plotting trajectories')
-        self._plot_trajectories(x_positions, y_positions)
 
         for detection in list_of_detections:
             x, y = self._get_box_center(detection.box_coords)
@@ -165,14 +164,17 @@ class BatTracker:
             x_positions.append(x/correction_factor)
             y_positions.append(y/correction_factor)
 
+        print('plotting trajectories')
+        self._plot_trajectories(x_positions, y_positions)
+        
         # Should be the same...
         time_x = np.linspace(0, len(x_positions) / frame_rate, len(x_positions))              
         time_y = np.linspace(0, len(y_positions) / frame_rate, len(y_positions))
         # print(f'this is time x: {time_x}')
         # print(f'this is time y: {time_y}')
 
-        x_spline = UnivariateSpline(time_x, x_positions, s = 1)             # Setting a smoothing factor to ensure that we don't fit the data exactly (as the data is noisy!)
-        y_spline = UnivariateSpline(time_y, y_positions, s = 1)
+        x_spline = UnivariateSpline(time_x, x_positions, s = 2)             # Setting a smoothing factor to ensure that we don't fit the data exactly (as the data is noisy!)
+        y_spline = UnivariateSpline(time_y, y_positions, s = 2)
 
         print('plotting spines')
         self._plot_splines(x_positions, y_positions, x_spline, y_spline, time_x)
@@ -195,7 +197,7 @@ class BatTracker:
         plt.title("Speed Over Time")
         plt.legend()
         plt.grid()
-        plt.savefig("./figures/speed_plot.png")
+        plt.savefig("./figures/speed_plot_3.png")
 
 
     def _calculate_speed(self, splines_tuple: Tuple[UnivariateSpline, UnivariateSpline], time):
@@ -274,7 +276,7 @@ The basic idea is as follows:
 '''
 
 if __name__ == "__main__":
-    SOURCE_VIDEO_PATH = "./input/baseball_2.mp4"
+    SOURCE_VIDEO_PATH = "./input/baseball_3.mp4"
 
     load_tools = LoadTools()
     model_weights = load_tools.load_model(model_alias='bat_tracking')
