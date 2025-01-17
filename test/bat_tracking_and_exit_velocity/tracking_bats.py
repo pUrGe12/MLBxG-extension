@@ -125,7 +125,7 @@ class BatTracker:
         plt.gca().invert_yaxis()
         plt.legend()
         plt.grid()
-        plt.savefig("./figures/bat_trajectory_3.png")
+        plt.savefig("./figures/bat_trajectory_4.png")
 
 
     def _plot_splines(self, x_positions, y_positions, x_spline, y_spline, time_x):
@@ -142,7 +142,7 @@ class BatTracker:
         plt.gca().invert_yaxis()
         plt.legend()
         plt.grid()
-        plt.savefig("./figures/spline_interpolated_3.png")
+        plt.savefig("./figures/spline_interpolated_4.png")
 
 
     def _calculate_splines(self, list_of_detections: List[BatDetection], frame_rate, correction_factor):
@@ -173,8 +173,8 @@ class BatTracker:
         # print(f'this is time x: {time_x}')
         # print(f'this is time y: {time_y}')
 
-        x_spline = UnivariateSpline(time_x, x_positions, s = 2)             # Setting a smoothing factor to ensure that we don't fit the data exactly (as the data is noisy!)
-        y_spline = UnivariateSpline(time_y, y_positions, s = 2)
+        x_spline = UnivariateSpline(time_x, x_positions, s = 1)             # Setting a smoothing factor to ensure that we don't fit the data exactly (as the data is noisy!)
+        y_spline = UnivariateSpline(time_y, y_positions, s = 1)
 
         print('plotting spines')
         self._plot_splines(x_positions, y_positions, x_spline, y_spline, time_x)
@@ -197,7 +197,7 @@ class BatTracker:
         plt.title("Speed Over Time")
         plt.legend()
         plt.grid()
-        plt.savefig("./figures/speed_plot_3.png")
+        plt.savefig("./figures/speed_plot_4.png")
 
 
     def _calculate_speed(self, splines_tuple: Tuple[UnivariateSpline, UnivariateSpline], time):
@@ -276,7 +276,7 @@ The basic idea is as follows:
 '''
 
 if __name__ == "__main__":
-    SOURCE_VIDEO_PATH = "./input/baseball_3.mp4"
+    SOURCE_VIDEO_PATH = "./input/baseball_4.mp4"
 
     load_tools = LoadTools()
     model_weights = load_tools.load_model(model_alias='bat_tracking')
