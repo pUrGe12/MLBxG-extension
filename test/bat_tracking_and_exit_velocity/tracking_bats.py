@@ -23,6 +23,73 @@ matplotlib.use('Agg')  # Use non-GUI backend
 
 import matplotlib.pyplot as plt
 
+class DeblurProcessor:
+    def __init__(self, num_iterations=30):
+        self.num_iterations = num_iterations
+        
+    def estimate_psf(self, image_size=15):
+        """Generate estimated Point Spread Function for deblurring"""
+        center = (image_size - 1) / 2
+        psf = np.zeros((image_size, image_size))
+        
+        # Create a motion blur kernel
+        for i in range(image_size):
+            for j in range(image_size):
+                dist = np.sqrt((i - center) ** 2 + (j - center) ** 2)
+                if dist <= center:
+                    psf[i, j] = 1
+        
+        psf /= psf.sum()  # Normalize
+        return psf
+    
+    def richardson_lucy(self, image: np.ndarray, psf: np.ndarray) -> np.ndarray:
+        """
+        Apply Richardson-Lucy deconvolution algorithm
+        
+        Args:
+            image: Input image channel (2D array)
+            psf: Point spread function kernel
+            
+        Returns:
+            Deblurred image channel
+        """
+        # Initialize the estimate with the input image
+        estimate = np.full(image.shape, 0.5)
+        psf_flip = np.flip(np.flip(psf, 0), 1)  # Flipped PSF for convolution
+        
+        # Richardson-Lucy iterations
+        for _ in range(self.num_iterations):
+            # Compute the ratio between the input image and the estimate convolved with the PSF
+            conv = cv2.filter2D(estimate, -1, psf)
+            conv[conv == 0] = np.finfo(float).eps  # Avoid division by zero
+            ratio = image / conv
+            
+            # Update the estimate
+            estimate *= cv2.filter2D(ratio, -1, psf_flip)
+            
+        return estimate
+    
+    def deblur_frame(self, frame):
+        """Apply Richardson-Lucy deconvolution to a frame"""
+        # Convert to float32 for processing
+        frame_float = frame.astype(np.float32) / 255.0
+        
+        # Process each channel separately
+        deblurred_channels = []
+        psf = self.estimate_psf()
+        
+        for channel in cv2.split(frame_float):
+            deblurred = self.richardson_lucy(channel, psf)
+            deblurred = cv2.normalize(deblurred, None, 0, 1, cv2.NORM_MINMAX)
+            deblurred_channels.append(deblurred)
+        
+        # Merge channels and convert back to uint8
+        deblurred_frame = cv2.merge(deblurred_channels)
+        deblurred_frame = (deblurred_frame * 255).clip(0, 255).astype(np.uint8)
+        
+        return deblurred_frame
+
+
 class LoadTools:
     def __init__(self):
         self.session = requests.Session()
@@ -90,9 +157,11 @@ class BatTracker:
         self, 
         model=YOLO, 
         min_confidence = 0.1,                   # To get more detections, we can lower this (cause its unlikely that the model will find something BAT like)
+        deblur_iterations=30
         ):                                       # Since, we're using splines
         self.model = model
         self.min_confidence = min_confidence
+        self.deblur_processor = DeblurProcessor(num_iterations=deblur_iterations)
 
     def _get_box_center(self, box_coords: np.ndarray) -> Tuple[float, float]:
         '''Calculates the center of the bounding box'''
@@ -125,7 +194,7 @@ class BatTracker:
         plt.gca().invert_yaxis()
         plt.legend()
         plt.grid()
-        plt.savefig("./figures/bat_trajectory_4.png")
+        plt.savefig("./figures/bat_trajectory_4_deblurred.png")
 
 
     def _plot_splines(self, x_positions, y_positions, x_spline, y_spline, time_x):
@@ -142,7 +211,7 @@ class BatTracker:
         plt.gca().invert_yaxis()
         plt.legend()
         plt.grid()
-        plt.savefig("./figures/spline_interpolated_4.png")
+        plt.savefig("./figures/spline_interpolated_3_deblurred.png")
 
 
     def _calculate_splines(self, list_of_detections: List[BatDetection], frame_rate, correction_factor):
@@ -197,7 +266,7 @@ class BatTracker:
         plt.title("Speed Over Time")
         plt.legend()
         plt.grid()
-        plt.savefig("./figures/speed_plot_4.png")
+        plt.savefig("./figures/speed_plot_3_deblurred.png")
 
 
     def _calculate_speed(self, splines_tuple: Tuple[UnivariateSpline, UnivariateSpline], time):
@@ -235,10 +304,18 @@ class BatTracker:
                 break
                 
             timestamp = frame_number / fps
-            print(f"This is the timestamp: {timestamp}")                    # This is the timestamp
+            print(f"This is the timestamp: {timestamp}")
 
-            # Get detections for current frame
-            results = self.model.predict(frame, verbose=False)
+            # Apply deblurring before detection
+            deblurred_frame = self.deblur_processor.deblur_frame(frame)
+            
+            # Save original and deblurred frames for comparison (optional)
+            if frame_number == 0:  # Save first frame as example
+                cv2.imwrite('original_frame.jpg', frame)
+                cv2.imwrite('deblurred_frame.jpg', deblurred_frame)
+            
+            # Get detections for current frame using deblurred image
+            results = self.model.predict(deblurred_frame, verbose=False)
             print(f"detecting for frame {frame_number}")
 
             for r in results:
@@ -246,11 +323,11 @@ class BatTracker:
                     confidence = float(box.conf)
                     if confidence >= self.min_confidence:
                         detection = BatDetection(
-                            frame_number = frame_number,
-                            timestamp = timestamp,
-                            box_coords = box.xyxy,
-                            confidence = confidence,
-                            track_id = int(box.id) if box.id is not None else None
+                            frame_number=frame_number,
+                            timestamp=timestamp,
+                            box_coords=box.xyxy,
+                            confidence=confidence,
+                            track_id=int(box.id) if box.id is not None else None
                         )
                         all_detections.append(detection)
 
@@ -259,10 +336,8 @@ class BatTracker:
         cap.release()
 
         average_correction_factor = self._get_average_correction_factor(all_detections)
-
         x_spline, y_spline, time_x, time_y = self._calculate_splines(all_detections, fps, average_correction_factor)
-
-        max_speed = self._calculate_speed((x_spline, y_spline), time_x)                     # Assuming them to be the same    
+        max_speed = self._calculate_speed((x_spline, y_spline), time_x)
 
         return max_speed
 
@@ -276,7 +351,7 @@ The basic idea is as follows:
 '''
 
 if __name__ == "__main__":
-    SOURCE_VIDEO_PATH = "./input/baseball_4.mp4"
+    SOURCE_VIDEO_PATH = "./input/baseball_3.mp4"
 
     load_tools = LoadTools()
     model_weights = load_tools.load_model(model_alias='bat_tracking')
@@ -284,7 +359,8 @@ if __name__ == "__main__":
 
     tracker = BatTracker(
         model = model,
-        min_confidence = 0.2
+        min_confidence = 0.2,
+        deblur_iterations=30
     )
 
     results = tracker.process_video(SOURCE_VIDEO_PATH)
