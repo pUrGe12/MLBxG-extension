@@ -25,7 +25,7 @@ Options page
 - [x] See if we can incorporate the curve of the ball during the pitch... (this we did using parabolic trajectory calculations)
 - [ ] Write the readme for the math and the implementation of speed calculation precisely! Explain the use of scale factor precisely
 - [ ] Create a schedule parser
-
+- [ ] We'll probably have to switch from yolo to EfficientDet cause yolo is not google's.
 
 How do we compare swings? Will have to learn...
 

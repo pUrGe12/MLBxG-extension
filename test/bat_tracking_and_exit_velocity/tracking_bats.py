@@ -351,7 +351,7 @@ The basic idea is as follows:
 '''
 
 if __name__ == "__main__":
-    SOURCE_VIDEO_PATH = "./input/baseball_3.mp4"
+    SOURCE_VIDEO_PATH = "./input/baseball_2.mp4"
 
     load_tools = LoadTools()
     model_weights = load_tools.load_model(model_alias='bat_tracking')
