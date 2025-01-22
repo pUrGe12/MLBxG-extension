@@ -19,7 +19,7 @@ We're gonna work under the assumption that the laptop is not strong enough to ru
 
 # Work
 
-Options page
+- [ ] Make the baseball detection thing run in parallel (THIS IS THE FIRST THING, START WITH THIS)
 
 - [ ] Make it look better (add the similarity table in the right div)
 - [ ] In the second edition I am planning on annotating the video feed itself and displaying the entire video as an output. This will be much easier for the user to comprehend!
@@ -29,7 +29,6 @@ Options page
 - [ ] Write the readme for the math and the implementation of speed calculation precisely! Explain the use of scale factor precisely
 - [ ] Create a schedule parser
 - [ ] We'll probably have to switch from yolo to EfficientDet cause yolo is not google's.
-
 How do we compare swings? Will have to learn...
 
 # More things

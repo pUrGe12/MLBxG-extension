@@ -163,7 +163,7 @@ def calculate_speed_ball(video_path, min_confidence=0.5, max_displacement=100, m
             output += f"\nEsttimated speed: {v_real_max:.1f}" + f" to {v_real_min:.1f} mph"
 
         else:
-            output += f"\nEstimated speed: {estimated_speed_max:.1f}" + f" to {estimated_speed_min:.1f} mph"
+            output += f"\nEstimated speed: {estimated_speed_min:.1f}" + f" to {estimated_speed_max:.1f} mph \n"
             print(f'Estimated speed range: {estimated_speed_max, estimated_speed_min}')
 
         output += f"This was within the time frame: {speed_est['start_frame'] * 1/results['fps']} to {speed_est['end_frame'] * 1/results['fps']}"
