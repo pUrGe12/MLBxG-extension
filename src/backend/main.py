@@ -59,6 +59,12 @@ global encoder, scaler
 encoder, scaler = load_models()             # Load the encoder and the scaler using the above defined function
 
 # ---------------------------------------------------------------------------
+# Import for bat detection and velocity calculation
+# ---------------------------------------------------------------------------
+from helper_files.tracking_bats import DeblurProcessor, BatTracker
+from helper_files.tracking_bats import BatDetection
+
+# ---------------------------------------------------------------------------
 # Some helping functions
 # ---------------------------------------------------------------------------
 
@@ -98,15 +104,15 @@ def get_url(user_query):
     return link
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
-#                                           This is the function that can calculate the speed for us
+#                                           This is the function that can calculate the ball speed for us
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def calculate_speed(video_path, min_confidence=0.5, max_displacement=100, min_sequence_length=7, pitch_distance_range=(55,65)):
+def calculate_speed_ball(video_path, min_confidence=0.5, max_displacement=100, min_sequence_length=7, pitch_distance_range=(55,65)):
     # First load the phc detector and find coordinates for the pitcher and the catcher
     SOURCE_VIDEO_PATH = video_path
     
-    print('here')
-    print(SOURCE_VIDEO_PATH)
+    # print('here')
+    # print(SOURCE_VIDEO_PATH)
 
     coordinates = calculate_pitcher_and_catcher(SOURCE_VIDEO_PATH)                     # Returns coordinates as (x1, y1, x2, y2)
     # x2, y2 is the pitcher and x1, y1 is the catcher
@@ -164,6 +170,27 @@ def calculate_speed(video_path, min_confidence=0.5, max_displacement=100, min_se
 
     return output
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+#                                           This is the function that can calculate the ball speed for us
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def calculate_speed_bat(video_path, min_confidence = 0.5, deblur_iterations = 30):
+
+    SOURCE_VIDEO_PATH = video_path
+
+    load_tools = LoadTools()
+    model_weights = load_tools.load_model(model_alias='bat_tracking')
+    model = YOLO(model_weights)
+
+    tracker = BatTracker(
+        model = model,
+        min_confidence = 0.2,                       # 0.2 also works good enough
+        deblur_iterations=30
+    )
+
+    results = tracker.process_video(SOURCE_VIDEO_PATH)
+
+    return results
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #                                                                                       API endpoints
@@ -197,6 +224,8 @@ def process_input():
     3. If it is required, then process the video and answer.
 
     We'll focus on figuring out 2 statcast datas from the videos, those are the pitcher's speed, and the batsman's hit velocities
+    
+    How do we ensure that this works?
     '''
     
     boolean = check_buffer_needed(user_input)
@@ -230,7 +259,7 @@ def process_input():
         return jsonify({"response": processed_output})
 
 
-    else:            # that is buffer is required
+    else:                                                            # that is buffer is required
         print('buffer is needed!')
 
         # Make a post request to the extension with the action getBuffer. (I am worried about the syntax here)
@@ -254,16 +283,17 @@ def process_input():
 
             what_is_needed = check_statcast(user_input)
 
-            if 'baseballspeed' in what_is_needed.strip().lower():
+            if 'baseballspeed' in what_is_needed.strip().lower():            # Hopefully it will output exactly as this is...
                 
                 # All other parameters are default
-                output = calculate_speed(video_path)
+                output = calculate_speed_ball(video_path)
 
                 return jsonify({"response": output}), 200
             
             elif 'exitvelocity' in what_is_needed.strip().lower():
-                # This now requires tracking the bat.
-                pass
+                output = calculate_speed_bat(video_path)
+
+                return jsonify({"response": output}), 200
 
             else:
                 return jsonify({"error": "Failed to get buffer"}), 500
@@ -365,7 +395,7 @@ def classics_video_processing():
         video_file.save(file_path)
         
         SOURCE_VIDEO_PATH = f'/home/purge/Desktop/MLBxG-extension/src/backend/uploads/videos/{filename}'
-        output = calculate_speed(SOURCE_VIDEO_PATH)
+        output = calculate_speed_ball(SOURCE_VIDEO_PATH)
 
         return jsonify({                                                            # Also need to return uploaded message
             'message': 'Video analysed successfully, now running plan',
@@ -421,7 +451,7 @@ def classics_text_processing():
     
     SOURCE_VIDEO_PATH = filename
 
-    output = calculate_speed(SOURCE_VIDEO_PATH)
+    output = calculate_speed_ball(SOURCE_VIDEO_PATH)
 
     return jsonify({
         'message': f"This is what we found: \n{output}"

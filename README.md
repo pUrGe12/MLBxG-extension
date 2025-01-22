@@ -13,6 +13,9 @@
 
 </div>
 
+---
+
+We're gonna work under the assumption that the laptop is not strong enough to run the models fast enough.
 
 # Work
 
