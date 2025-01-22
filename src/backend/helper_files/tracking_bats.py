@@ -185,33 +185,33 @@ class BatTracker:
 
         return average_ratio_pixel_to_feet
 
-    def _plot_trajectories(self, x_positions, y_positions):
-        plt.figure(figsize=(10, 6))
-        plt.plot(x_positions, y_positions[::-1], 'o-', label="Raw Detections", color="blue", alpha=0.7)
-        plt.xlabel("X Position (ft)")
-        plt.ylabel("Y Position (ft)")
-        plt.title("Plotting the trajectories")
-        plt.gca().invert_yaxis()
-        plt.legend()
-        plt.grid()
-        plt.savefig("./figures/bat_trajectory_4_deblurred.png")
+    # def _plot_trajectories(self, x_positions, y_positions):
+    #     plt.figure(figsize=(10, 6))
+    #     plt.plot(x_positions, y_positions[::-1], 'o-', label="Raw Detections", color="blue", alpha=0.7)
+    #     plt.xlabel("X Position (ft)")
+    #     plt.ylabel("Y Position (ft)")
+    #     plt.title("Plotting the trajectories")
+    #     plt.gca().invert_yaxis()
+    #     plt.legend()
+    #     plt.grid()
+    #     plt.savefig("./figures/bat_trajectory_4_deblurred.png")
 
 
-    def _plot_splines(self, x_positions, y_positions, x_spline, y_spline, time_x):
-        t_fine = np.linspace(time_x[0], time_x[-1], 1000)  # Fine-grained time for smooth spline
-        x_fine = x_spline(t_fine)
-        y_fine = y_spline(t_fine)
+    # def _plot_splines(self, x_positions, y_positions, x_spline, y_spline, time_x):
+    #     t_fine = np.linspace(time_x[0], time_x[-1], 1000)  # Fine-grained time for smooth spline
+    #     x_fine = x_spline(t_fine)
+    #     y_fine = y_spline(t_fine)
 
-        plt.figure(figsize=(10, 6))
-        plt.plot(x_positions, y_positions, 'o', label="Raw Detections", color="blue", alpha=0.7)
-        plt.plot(x_fine, y_fine, '-', label="Spline Fit", color="red", linewidth=2)
-        plt.xlabel("X Position (ft)")
-        plt.ylabel("Y Position (ft)")
-        plt.title("Trajectory with Spline Fit")
-        plt.gca().invert_yaxis()
-        plt.legend()
-        plt.grid()
-        plt.savefig("./figures/spline_interpolated_3_deblurred.png")
+    #     plt.figure(figsize=(10, 6))
+    #     plt.plot(x_positions, y_positions, 'o', label="Raw Detections", color="blue", alpha=0.7)
+    #     plt.plot(x_fine, y_fine, '-', label="Spline Fit", color="red", linewidth=2)
+    #     plt.xlabel("X Position (ft)")
+    #     plt.ylabel("Y Position (ft)")
+    #     plt.title("Trajectory with Spline Fit")
+    #     plt.gca().invert_yaxis()
+    #     plt.legend()
+    #     plt.grid()
+    #     plt.savefig("./figures/spline_interpolated_3_deblurred.png")
 
 
     def _calculate_splines(self, list_of_detections: List[BatDetection], frame_rate, correction_factor):
@@ -233,8 +233,8 @@ class BatTracker:
             x_positions.append(x/correction_factor)
             y_positions.append(y/correction_factor)
 
-        print('plotting trajectories')
-        self._plot_trajectories(x_positions, y_positions)
+        # print('plotting trajectories')
+        # self._plot_trajectories(x_positions, y_positions)
         
         # Should be the same...
         time_x = np.linspace(0, len(x_positions) / frame_rate, len(x_positions))              
@@ -245,28 +245,28 @@ class BatTracker:
         x_spline = UnivariateSpline(time_x, x_positions, s = 1)             # Setting a smoothing factor to ensure that we don't fit the data exactly (as the data is noisy!)
         y_spline = UnivariateSpline(time_y, y_positions, s = 1)
 
-        print('plotting spines')
-        self._plot_splines(x_positions, y_positions, x_spline, y_spline, time_x)
+        # print('plotting spines')
+        # self._plot_splines(x_positions, y_positions, x_spline, y_spline, time_x)
 
         return (x_spline, y_spline, time_x, time_y)
 
 
-    def _plot_speed(self, speed, t_fine):
-        """
-        The objective is to look out for:
+    # def _plot_speed(self, speed, t_fine):
+    #     """
+    #     The objective is to look out for:
 
-        1. Smooth speed changes are expected
-        2. Large spikes may indicate noise in the trajectory.
-        """
+    #     1. Smooth speed changes are expected
+    #     2. Large spikes may indicate noise in the trajectory.
+    #     """
 
-        plt.figure(figsize=(10, 6))
-        plt.plot(t_fine, speed, label="Speed (ft/s)", color="green")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Speed (ft/s)")
-        plt.title("Speed Over Time")
-        plt.legend()
-        plt.grid()
-        plt.savefig("./figures/speed_plot_3_deblurred.png")
+    #     plt.figure(figsize=(10, 6))
+    #     plt.plot(t_fine, speed, label="Speed (ft/s)", color="green")
+    #     plt.xlabel("Time (s)")
+    #     plt.ylabel("Speed (ft/s)")
+    #     plt.title("Speed Over Time")
+    #     plt.legend()
+    #     plt.grid()
+    #     plt.savefig("./figures/speed_plot_3_deblurred.png")
 
 
     def _calculate_speed(self, splines_tuple: Tuple[UnivariateSpline, UnivariateSpline], time):
@@ -284,8 +284,8 @@ class BatTracker:
 
         speed = np.sqrt(dx_dt**2 + dy_dt**2)                # This is an array of ft speed itself
         
-        print('plotting speeds')
-        self._plot_speed(speed, t_fine)
+        # print('plotting speeds')
+        # self._plot_speed(speed, t_fine)
 
         return np.max(speed)
 
@@ -350,19 +350,19 @@ The basic idea is as follows:
 4. Differentiate wrt to time and find the maximum velocity
 '''
 
-if __name__ == "__main__":
-    SOURCE_VIDEO_PATH = "./input/baseball_2.mp4"
+# if __name__ == "__main__":
+#     SOURCE_VIDEO_PATH = "./input/baseball_2.mp4"
 
-    load_tools = LoadTools()
-    model_weights = load_tools.load_model(model_alias='bat_tracking')
-    model = YOLO(model_weights)
+#     load_tools = LoadTools()
+#     model_weights = load_tools.load_model(model_alias='bat_tracking')
+#     model = YOLO(model_weights)
 
-    tracker = BatTracker(
-        model = model,
-        min_confidence = 0.2,
-        deblur_iterations=30
-    )
+#     tracker = BatTracker(
+#         model = model,
+#         min_confidence = 0.2,
+#         deblur_iterations=30
+#     )
 
-    results = tracker.process_video(SOURCE_VIDEO_PATH)
+#     results = tracker.process_video(SOURCE_VIDEO_PATH)
 
-    print(f'max bat swing speed in ft per second was: {results}')
+#     print(f'max bat swing speed in ft per second was: {results}')
