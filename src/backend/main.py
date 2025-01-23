@@ -122,7 +122,7 @@ def calculate_speed_ball(video_path, min_confidence=0.5, max_displacement=100, m
     scale_factor = float(np.sqrt((x2-x1)**2 + (y2-y1)**2)/(60.5))              # scale factor is pixel distance between those niggas divided by actual distance between the niggas
     print(f"scale_factor: {scale_factor}")
 
-    beta = float(np.arctan(2*(x1-x2)/(y2-y1)))                              # The math is explained in the readme docs
+    beta = float(np.arctan(2*(x1-x2)/(y2-y1)))                              # The math is explained in the readme docs, but we aren't really using it yet
     print(f"sin(beta) = {np.sin(beta)}")
 
     load_tools = LoadTools()
