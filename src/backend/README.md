@@ -9,6 +9,8 @@ This is where the processing happens. The important files of consideration are:
 
 Additionally we have the [uploads file](./uploads/videos) which is where the user's inputted videos (as will be explained later) go.
 
+The directory also have some test files (which I should've performed in the test directory itself but got carried away). Those are for parallelly detecting baseballs and catcher+pitcher but it was so much slower in my laptop!
+
 ## Functionality
 
 The backend performs the following functions

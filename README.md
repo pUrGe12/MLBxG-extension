@@ -15,11 +15,13 @@
 
 ---
 
+I have written a blog about this over at my [GitHub pages](https://purge12.github.io/)! It has the technical explanations for whatever I have done and it will do a better job of explaining the flow.
+
 We're gonna work under the assumption that the laptop is not strong enough to run the models fast enough.
 
 # Work
 
-- [ ] Make the baseball detection thing run in parallel (THIS IS THE FIRST THING, START WITH THIS)
+- [x] Make the baseball detection thing run in parallel (THIS IS THE FIRST THING, START WITH THIS)
 
 - [ ] Make it look better (add the similarity table in the right div)
 - [ ] In the second edition I am planning on annotating the video feed itself and displaying the entire video as an output. This will be much easier for the user to comprehend!
