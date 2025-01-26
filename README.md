@@ -82,7 +82,13 @@ I don't have a CWS developer account (cause I don't have 5 dollars), and hence I
     
    ![Picture of options](./images/Screenshot2.png)
 
-8. Now you're good to go!
+8. Now you have the extension added.
+
+Next step is to start the backend. There is just one main file that you need to run. From the root directory of the repo, run this command
+
+        cd ./src/backend && python3 main.py
+
+You can now start testing it.
 
 ---
 
