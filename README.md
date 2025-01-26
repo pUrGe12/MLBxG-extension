@@ -44,7 +44,7 @@ You can ask it questions like "Yoo! How fast was that pitch?" as soon as the pit
 
 # The workflow
 
-![duxMLB](images/duxMLB_V3.png)
+![duxMLB](images/duxMLB_v3.png)
 
 # The looks
 
