@@ -15,39 +15,14 @@
 
 ---
 
-I have written a blog about this over at my [GitHub pages](https://purge12.github.io/)! It has the technical explanations for whatever I have done and it will do a better job of explaining the flow.
-
-We're gonna work under the assumption that the laptop is not strong enough to run the models fast enough.
-
-# Work
-
-- [x] Make the baseball detection thing run in parallel (THIS IS THE FIRST THING, START WITH THIS)
-
-- [ ] Make it look better (add the similarity table in the right div)
-- [ ] In the second edition I am planning on annotating the video feed itself and displaying the entire video as an output. This will be much easier for the user to comprehend!
-- [ ] Figure out the sending and recieving of the buffer video
-- [ ] The novice users can enter a `mp4` video file that contains them practising their swings or pitches.
-- [x] See if we can incorporate the curve of the ball during the pitch... (this we did using parabolic trajectory calculations)
-- [ ] Write the readme for the math and the implementation of speed calculation precisely! Explain the use of scale factor precisely
-- [ ] Create a schedule parser
-- [ ] We'll probably have to switch from yolo to EfficientDet cause yolo is not google's.
-How do we compare swings? Will have to learn...
-
-# More things
-
-- [ ] Integrating velocity finder with panel.py
-- [ ] Creating a exit-velocity finder using bat-tracking
-- [ ] Update logic to handle different camera angles. (to some extent, the math works --> Incorporating the scale factor)
-- [x] Run statcast on the downloaded youtube video (at least the speed calculation works!)
-
 Developing an extension that can read your screen and give you live data updates and tips on your favourite baseball games! (With permission)
 
 > [!IMPORTANT]
 > What can you do with duxMLB?
 
 **duxMLB** offers two features
-1. Panel page: For when you are watching a YouTube match. (can be later extended to others as well)
-2. Options page: For predicting your MLB future by comparing you to top players!
+1. Panel page: For when you are watching a YouTube match and want to know about a certain player, or team or the schedule. (can be later extended to others as well)
+2. Options page: For predicting your MLB future by comparing you to top players! If you have any legacy game in mind, upload it here for us to analyse and give you the statcast data!
 
 There is also a `guide` page which explains how the site was made and contains all the techincal explanations. Visit this in the `extension options` and figure out what's in store for you!
 
@@ -56,7 +31,7 @@ There is also a `guide` page which explains how the site was made and contains a
 The panel page contains a `gemini` model that allows you to do the following
 
 - [x] Ask the model about any players, team or MLB schedule and it will give `upto date` information (regards to APIs provided by Google)
-- [ ] You can, while watching a LIVE match, ask the model statcast data and it will analyize and answer!
+- [x] You can, while watching a LIVE match, ask the model statcast data and it will analyize and answer!
 
 > [!NOTE]
 > What does that mean?
@@ -69,7 +44,7 @@ You can ask it questions like "Yoo! How fast was that pitch?" as soon as the pit
 
 # The workflow
 
-![duxMLB](images/duxMLB_V2.png)
+![duxMLB](images/duxMLB_V3.png)
 
 # The looks
 
@@ -79,13 +54,9 @@ This is the side panel. You can open this in any youtube video (currently works 
 
 ---
 
-This is the options page. This page is to help you predict your MLB future and a how to guide on the **technical implementations** of the extension. It involves the entire pipeline!
+This is the options page. This page is to help you predict your MLB future and a how to guide on the **technical implementations** of the extension. It also has functionality to analyse **legacy MLB games** and generate statcast data for that.
 
 ![options page](images/options.png)
-
----
-
-Have created seperate ports for the panel and the options page because it will be much easier to manage and make changes in that.
 
 ---
 
@@ -115,7 +86,7 @@ I don't have a CWS developer account (cause I don't have 5 dollars), and hence I
 
 ---
 
-# Training a custom YOLOv5 model
+### Training a custom YOLOv5 model
 
 These are the steps you need to follow to train your YOLOv5s model.
 
@@ -205,3 +176,24 @@ Inside the `yolov5` directory then run the following code
 This will start training the model. The new weights will be saved in `runs/train/baseball_detection/weights/best.pt`
 
 So, in order to use the model, we'll have to use the `best.pt` weights. Refer to the using codes for that. 
+
+# Work
+
+- [x] Make the baseball detection thing run in parallel (THIS IS THE FIRST THING, START WITH THIS)
+
+- [ ] Make it look better (add the similarity table in the right div)
+- [ ] In the second edition I am planning on annotating the video feed itself and displaying the entire video as an output. This will be much easier for the user to comprehend!
+- [ ] Figure out the sending and recieving of the buffer video
+- [ ] The novice users can enter a `mp4` video file that contains them practising their swings or pitches.
+- [x] See if we can incorporate the curve of the ball during the pitch... (this we did using parabolic trajectory calculations)
+- [ ] Write the readme for the math and the implementation of speed calculation precisely! Explain the use of scale factor precisely
+- [ ] Create a schedule parser
+- [ ] We'll probably have to switch from yolo to EfficientDet cause yolo is not google's.
+How do we compare swings? Will have to learn...
+
+# More things
+
+- [ ] Integrating velocity finder with panel.py
+- [ ] Creating a exit-velocity finder using bat-tracking
+- [ ] Update logic to handle different camera angles. (to some extent, the math works --> Incorporating the scale factor)
+- [x] Run statcast on the downloaded youtube video (at least the speed calculation works!)
