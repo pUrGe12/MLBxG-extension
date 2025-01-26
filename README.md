@@ -96,7 +96,6 @@ You can now start testing it.
 
 These are the steps you need to follow to train your YOLOv5s model.
 
-
 Clone the YOLOv5 repository
 
         git clone https://github.com/ultralytics/yolov5.git
