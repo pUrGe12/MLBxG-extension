@@ -281,7 +281,6 @@ def process_input():
 
         return jsonify({"response": processed_output})
 
-
     else:                                                            # that is buffer is required
         print('buffer is needed!')
 
