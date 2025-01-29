@@ -211,73 +211,111 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+@app.route('/check-buffer', methods=['POST'])
+def check_buffer():
+    """Endpoint that receives buffer but only saves it if we're expecting it"""
+    if 'video' not in request.files:
+        return jsonify({'error': 'No video file'}), 400
+    
+    # Simply return 404 if we're not expecting buffer
+    # This tells frontend to keep trying
+    if not getattr(app, 'waiting_for_buffer', False):
+        return jsonify({'message': 'Buffer not needed yet'}), 404
+    
+    # If we are waiting for buffer, save it
+    video_file = request.files['video']
+    with open("./input_files/received_video.webm", "wb") as fp:
+        video_file.save(fp)
+    
+    # Signal that we've received the buffer
+    app.waiting_for_buffer = False
+    app.buffer_received = True
+    
+    return jsonify({'message': 'Buffer received'}), 200
+
+
 @app.route('/process_input', methods=['POST'])
 def process_input():
     user_input = request.json.get('input')  # Receive input from the panel
     if not user_input:
         return jsonify({"error": "No input provided"}), 400
+
     '''
     Here is how the processing takes place
     1. Figure out if the buffer is required. 
     2. If it is not required, then answer general baseball stats. This is what panel_response is
     3. If it is required, then process the video and answer.
-    We'll focus on figuring out 2 statcast datas from the videos, those are the pitcher's speed, and the batsman's hit velocities
 
+    We'll focus on figuring out 2 statcast datas from the videos, those are the pitcher's speed, and the batsman's hit velocities
+    
     How do we ensure that this works?
     '''
-
+    
     boolean = check_buffer_needed(user_input)
-
+    
     if boolean == False:             # That is no buffer needed
         # print('buffer not needed!')
-
+        
         '''
         Here, we may have to call the APIs
         The idea here is to parse the input, determine if its general baseball stuff or particular to a player, or a team or schedule, in which case we'll call the API querying function.
         '''
+
         if is_it_gen_stuff(user_input):
             print('Requires APIs')
+
             name_code_tuple = figure_out_code(team_code_mapping, player_code_mapping, user_input)
+
             output = call_API(name_code_tuple)
+
             # processed_output = output
             # print(output)
+
             if 'schedule' not in name_code_tuple[0]:
                 processed_output = pretty_print(output, user_input)             # not doing this if the output is too big as in the case of the schedule
             else:
                 processed_output = output
+
         else:
             processed_output = gen_talk(user_input)          # We'll add a normal response generator here
+
         return jsonify({"response": processed_output})
+
     else:                                                            # that is buffer is required
         print('buffer is needed!')
-        # Make a post request to the extension with the action getBuffer. (I am worried about the syntax here)
-        response = requests.post(
-            f"http://127.0.0.1:5000/extensions/{chrome_extension_id}/getBuffer",                    # Hope we're actually getting the buffer
-            json={'action': "getBuffer"}
-        )
-        if response.status_code == 200:
-            video_data = response.content
-            with open("./input_files/received_video.webm", "wb") as fp:               # Saving this in the input files directory (hopefully this works)
-                fp.write(video_data)
-            # Convert webm to mp4 and save it, cause we need to work with this format only.
-            convert_webm_to_mp4("./input_files/received_video.webm", "./input_files/converted_input.mp4")
 
-            video_path = "./input_files/converted_input.mp4"
-            # -------------------------------------------------------------------------------------------
-            #               Now we need a logic to see if they're asking for speed or what
-            # -------------------------------------------------------------------------------------------
-            what_is_needed = check_statcast(user_input)
-            if 'baseballspeed' in what_is_needed.strip().lower():            # Hopefully it will output exactly as this is...
+        app.waiting_for_buffer = True
+        app.buffer_received = False
 
-                # All other parameters are default
-                output = calculate_speed_ball(video_path)
-                return jsonify({"response": output}), 200
+        print('initialised flags')
+        import time
+        max_wait = 5  # Maximum seconds to wait
+        start_time = time.time()
 
-            elif 'exitvelocity' in what_is_needed.strip().lower():
-                output = calculate_speed_bat(video_path)
-                return jsonify({"response": output}), 200
-            else:
-                return jsonify({"error": "Failed to get buffer"}), 500
+        while not getattr(app, 'buffer_received', False):
+            print('inside while loop')
+            time.sleep(0.1)
+            if time.time() - start_time > max_wait:
+                return jsonify({"error": "Timeout waiting for video buffer"}), 500
+
+        convert_webm_to_mp4("./input_files/received_video.webm", "./input_files/converted_input.mp4")
+        print('converted')
+        video_path = "./input_files/converted_input.mp4"
+        what_is_needed = check_statcast(user_input)
+
+        # -------------------------------------------------------------------------------------------
+        #               Now we need a logic to see if they're asking for speed or what
+        # -------------------------------------------------------------------------------------------
+
+        if 'baseballspeed' in what_is_needed.strip().lower():
+            output = calculate_speed_ball(video_path)
+            return jsonify({"response": output}), 200
+        
+        elif 'exitvelocity' in what_is_needed.strip().lower():
+            output = calculate_speed_bat(video_path)
+            return jsonify({"response": output}), 200
+        else:
+            return jsonify({"error": "Unknown analysis type requested"}), 500
 
 
 @app.route('/user-stat/', methods=['POST'])
