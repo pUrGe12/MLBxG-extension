@@ -1,66 +1,93 @@
-// Content script to capture video and store in a circular buffer
+// Content script for video capture
+const BUFFER_DURATION_SECONDS = 5;
+const FRAME_RATE = 30;
+const BUFFER_SIZE = BUFFER_DURATION_SECONDS * FRAME_RATE;
+let mediaRecorder = null;
+let recordedChunks = [];
+let isBufferSending = false;
 
-// Buffer configuration
-BUFFER_DURATION_SECONDS = 5; // Buffer duration
-FRAME_RATE = 30; // Approximate frame rate
-BUFFER_SIZE = BUFFER_DURATION_SECONDS * FRAME_RATE; // Total frames in the buffer
-
-buffer = []; // Circular buffer for video frames
-bufferIndex = 0; // Current index in the buffer
-
-console.log("I am here!");
-
-// Helper function to initialize video capture
 function captureVideo() {
-    const videoElement = document.querySelector("video"); // Target the video element
-
+    const videoElement = document.querySelector("video");
     if (!videoElement) {
         console.error("No video element found!");
         return;
     }
-    // Create a canvas to capture frames
+
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-
-    // Set up canvas dimensions
     canvas.width = videoElement.videoWidth;
     canvas.height = videoElement.videoHeight;
 
-    // Start capturing frames
+    const stream = canvas.captureStream(FRAME_RATE);
+    mediaRecorder = new MediaRecorder(stream, {
+        mimeType: "video/webm;codecs=vp9"
+    });
+
+    mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+            recordedChunks.push(event.data);
+            if (recordedChunks.length > BUFFER_SIZE) {
+                recordedChunks.shift();
+            }
+            // Try to send buffer after each chunk
+            trySendBuffer();
+        }
+    };
+
+    mediaRecorder.start(1000 / FRAME_RATE);
+
     const captureInterval = setInterval(() => {
         if (videoElement.paused || videoElement.ended) {
             clearInterval(captureInterval);
             return;
         }
-
-        // Draw current video frame to the canvas
         ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-
-        // Convert the canvas to a Blob and store it in the buffer
-        canvas.toBlob((blob) => {
-            if (buffer.length < BUFFER_SIZE) {
-                buffer.push(blob);
-                console.log("Added new frame at index:", buffer.length - 1);
-            } else {
-                console.log("Overwriting frame at index:", bufferIndex);
-                buffer[bufferIndex] = blob;
-                bufferIndex = (bufferIndex + 1) % BUFFER_SIZE;
-            }
-        }, "image/webp"); 
     }, 1000 / FRAME_RATE);
+}
+
+async function trySendBuffer() {
+    if (isBufferSending || recordedChunks.length < BUFFER_SIZE) {
+        return;
+    }
+    
+    isBufferSending = true;
+    
+    try {
+        const videoBlob = new Blob(recordedChunks, { type: "video/webm" });
+        const formData = new FormData();
+        formData.append("video", videoBlob, "capture.webm");
+
+        await fetch("http://localhost:5000/check-buffer", {
+            method: "POST",
+            body: formData
+        });
+    } catch (error) {
+        console.log("Buffer not needed yet");
+    } finally {
+        isBufferSending = false;
+    }
 }
 
 document.addEventListener("play", (event) => {
     if (event.target.tagName === "VIDEO") {
-        console.log("Video playback started. Initializing capture...");
         captureVideo();
     }
 }, true);
 
-// This is probably not working. Figure this out.
+// Listen for messages from popup/background
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "getBuffer") {
-        const videoBlob = new Blob(buffer, { type: "video/webm" });
-        sendResponse({ videoBlob });
+    if (message.action === "processRequest") {
+        // Send the query to process_input endpoint
+        fetch("http://localhost:5000/process_input", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ input: message.query })
+        })
+        .then(response => response.json())
+        .then(result => sendResponse(result))
+        .catch(error => sendResponse({error: error.message}));
+        return true;
     }
 });

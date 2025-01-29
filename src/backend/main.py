@@ -64,15 +64,6 @@ encoder, scaler = load_models()             # Load the encoder and the scaler us
 from helper_files.tracking_bats import DeblurProcessor, BatTracker
 from helper_files.tracking_bats import BatDetection
 
-# Getting the chrome extension ID
-from dotenv import load_dotenv
-from pathlib import Path
-
-load_dotenv(dotenv_path=Path(__file__).parent / '.env')
-
-chrome_extension_id = str(os.getenv("chrome_extension_id")).strip()
-
-print(chrome_extension_id)
 # ---------------------------------------------------------------------------
 # Some helping functions
 # ---------------------------------------------------------------------------
@@ -220,6 +211,29 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+@app.route('/check-buffer', methods=['POST'])
+def check_buffer():
+    """Endpoint that receives buffer but only saves it if we're expecting it"""
+    if 'video' not in request.files:
+        return jsonify({'error': 'No video file'}), 400
+    
+    # Simply return 404 if we're not expecting buffer
+    # This tells frontend to keep trying
+    if not getattr(app, 'waiting_for_buffer', False):
+        return jsonify({'message': 'Buffer not needed yet'}), 404
+    
+    # If we are waiting for buffer, save it
+    video_file = request.files['video']
+    with open("./input_files/received_video.webm", "wb") as fp:
+        video_file.save(fp)
+    
+    # Signal that we've received the buffer
+    app.waiting_for_buffer = False
+    app.buffer_received = True
+    
+    return jsonify({'message': 'Buffer received'}), 200
+
+
 @app.route('/process_input', methods=['POST'])
 def process_input():
     user_input = request.json.get('input')  # Receive input from the panel
@@ -271,41 +285,38 @@ def process_input():
     else:                                                            # that is buffer is required
         print('buffer is needed!')
 
-        # Make a post request to the extension with the action getBuffer. (I am worried about the syntax here)
-        response = requests.post(
-            f"http://127.0.0.1:5000/extensions/{chrome_extension_id}/getBuffer",                    # Hope we're actually getting the buffer
-            json={'action': "getBuffer"}
-        )
-        if response.status_code == 200:
-            video_data = response.content
-            with open("./input_files/received_video.webm", "wb") as fp:               # Saving this in the input files directory (hopefully this works)
-                fp.write(video_data)
+        app.waiting_for_buffer = True
+        app.buffer_received = False
 
-            # Convert webm to mp4 and save it, cause we need to work with this format only.
-            convert_webm_to_mp4("./input_files/received_video.webm", "./input_files/converted_input.mp4")
-            
-            video_path = "./input_files/converted_input.mp4"
+        print('initialised flags')
+        import time
+        max_wait = 5  # Maximum seconds to wait
+        start_time = time.time()
 
-            # -------------------------------------------------------------------------------------------
-            #               Now we need a logic to see if they're asking for speed or what
-            # -------------------------------------------------------------------------------------------
+        while not getattr(app, 'buffer_received', False):
+            print('inside while loop')
+            time.sleep(0.1)
+            if time.time() - start_time > max_wait:
+                return jsonify({"error": "Timeout waiting for video buffer"}), 500
 
-            what_is_needed = check_statcast(user_input)
+        convert_webm_to_mp4("./input_files/received_video.webm", "./input_files/converted_input.mp4")
+        print('converted')
+        video_path = "./input_files/converted_input.mp4"
+        what_is_needed = check_statcast(user_input)
 
-            if 'baseballspeed' in what_is_needed.strip().lower():            # Hopefully it will output exactly as this is...
-                
-                # All other parameters are default
-                output = calculate_speed_ball(video_path)
+        # -------------------------------------------------------------------------------------------
+        #               Now we need a logic to see if they're asking for speed or what
+        # -------------------------------------------------------------------------------------------
 
-                return jsonify({"response": output}), 200
-            
-            elif 'exitvelocity' in what_is_needed.strip().lower():
-                output = calculate_speed_bat(video_path)
-
-                return jsonify({"response": output}), 200
-
-            else:
-                return jsonify({"error": "Failed to get buffer"}), 500
+        if 'baseballspeed' in what_is_needed.strip().lower():
+            output = calculate_speed_ball(video_path)
+            return jsonify({"response": output}), 200
+        
+        elif 'exitvelocity' in what_is_needed.strip().lower():
+            output = calculate_speed_bat(video_path)
+            return jsonify({"response": output}), 200
+        else:
+            return jsonify({"error": "Unknown analysis type requested"}), 500
 
 
 @app.route('/user-stat/', methods=['POST'])
@@ -484,6 +495,8 @@ def loading_yolo_models():
         })
 
 if __name__ == "__main__":
+    app.waiting_for_buffer = False
+    app.buffer_received = False
     app.run(host="127.0.0.1", port=5000, debug=True)
 
 # if __name__ == "__main__":
