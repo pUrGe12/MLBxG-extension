@@ -15,7 +15,7 @@
 
 ---
 
-Developing an extension that can read your screen and give you live data updates and tips on your favourite baseball games! (With permission)
+Developing an extension that can read your screen and give you live data updates and tips on your favourite baseball games! (With permission). 
 
 > [!IMPORTANT]
 > What can you do with duxMLB?
@@ -84,11 +84,13 @@ I don't have a CWS developer account (cause I don't have 5 dollars), and hence I
 
 8. Now you have the extension added.
 
-Next step is to start the backend. There is just one main file that you need to run. From the root directory of the repo, run this command
+Next step is to start the backend. There is just one main file that you need to run. From the root directory of the repo. Run the following commands to install the pre-requisities and run the backend
 
-        cd ./src/backend && python3 main.py
+        pip install -r requirements.txt
+        sudo apt install ffmpeg
+        cd src/backend/ && python3 main.py
 
-You can now start testing it.
+You can now start checking it out.
 
 ---
 

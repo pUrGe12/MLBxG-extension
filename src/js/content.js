@@ -46,12 +46,10 @@ function captureVideo() {
                 buffer[bufferIndex] = blob;
                 bufferIndex = (bufferIndex + 1) % BUFFER_SIZE;
             }
-        }, "image/webp"); // Use a lightweight format
-    }, 1000 / FRAME_RATE); // Capture at the specified frame rate
+        }, "image/webp"); 
+    }, 1000 / FRAME_RATE);
 }
 
-// captureVideo();
-// Listen for video playback start
 document.addEventListener("play", (event) => {
     if (event.target.tagName === "VIDEO") {
         console.log("Video playback started. Initializing capture...");
@@ -59,10 +57,9 @@ document.addEventListener("play", (event) => {
     }
 }, true);
 
-// Provide a way to retrieve the buffer
+// This is probably not working. Figure this out.
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "getBuffer") {
-        // Combine buffer frames into a video Blob
         const videoBlob = new Blob(buffer, { type: "video/webm" });
         sendResponse({ videoBlob });
     }

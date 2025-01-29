@@ -64,6 +64,15 @@ encoder, scaler = load_models()             # Load the encoder and the scaler us
 from helper_files.tracking_bats import DeblurProcessor, BatTracker
 from helper_files.tracking_bats import BatDetection
 
+# Getting the chrome extension ID
+from dotenv import load_dotenv
+from pathlib import Path
+
+load_dotenv(dotenv_path=Path(__file__).parent / '.env')
+
+chrome_extension_id = str(os.getenv("chrome_extension_id")).strip()
+
+print(chrome_extension_id)
 # ---------------------------------------------------------------------------
 # Some helping functions
 # ---------------------------------------------------------------------------
