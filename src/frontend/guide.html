@@ -145,7 +145,15 @@
 
             <h3>Statcast Data Processing</h3>
             <div class="feature-box">
-                <p><em><span class="status-dev">Under Development</span></em></p>
+                <ul>
+                    <li><strong>YOLOv8 Ball Tracking:</strong> Implements state-of-the-art YOLOv8 object detection model to track baseball position with frame-by-frame precision, enabling accurate speed calculations throughout the pitch trajectory.</li>
+                    <li><strong>Advanced Camera Angle Compensation:</strong> Calculates and adjusts for both azimuthal and normal camera angles to ensure accurate spatial measurements, utilizing sophisticated geometric algorithms detailed in documentation.</li>
+                    <li><strong>Precision Distance Calibration:</strong> Employs an innovative pixel-to-feet ratio calculation based on the standard 60.5ft MLB pitcher-to-home-plate distance, enabling accurate real-world measurements from video frames.</li>
+                    <li><strong>Velocity Vector Analysis:</strong> Utilizes numerical differentiation to compute x and y velocity components, combining them to determine the true parabolic velocity of the pitch with camera angle corrections.</li>
+                    <li><strong>Specialized Bat Tracking System:</strong> Implements a dedicated YOLOv8 model specifically trained for bat detection, tracking precise bat coordinates throughout the swing motion.</li>
+                    <li><strong>Advanced Swing Analysis:</strong> Creates high-precision univariate splines from tracked bat coordinates, enabling detailed swing path analysis and maximum speed calculations through mathematical differentiation.</li>
+                    <li><strong>Real-time Processing Pipeline:</strong> Integrates all components into a seamless processing pipeline that can analyze video frames in real-time, providing instant feedback on both pitch speeds and bat swing velocities.</li>
+                </ul>
             </div>
 
             <h3>LLM Integration</h3>
