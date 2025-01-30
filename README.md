@@ -92,13 +92,29 @@ Next step is to start the backend. There is just one main file that you need to 
 
 You can now start checking it out.
 
+# How to test
+
+1. Testing the panel
+
+- Ask for a player's stats
+- Ask for a team's stats
+- Ask for the MLB schedule
+- Ask for immediate statcast data while watching a live game
+- Talk about any other baseball related things
+
+2. Testing the options page
+
+- Head over to the `options page` as mentioned above. Enter your MLB statcast to get a prediction
+- Check out the guide for more details on how the project was implemented
+- Upload a classics match (make it small otherwise you'll have to wait for long!) directly in MP4 format and generate the pitch speeds
+- Type in the name for a match and generate the pitch speeds
+
 ---
 
 # Work
 
 - [x] Make the baseball detection thing run in parallel (THIS IS THE FIRST THING, START WITH THIS)
 
-- [ ] Make it look better (add the similarity table in the right div)
 - [ ] In the second edition I am planning on annotating the video feed itself and displaying the entire video as an output. This will be much easier for the user to comprehend!
 - [ ] Figure out the sending and recieving of the buffer video
 - [ ] The novice users can enter a `mp4` video file that contains them practising their swings or pitches.
