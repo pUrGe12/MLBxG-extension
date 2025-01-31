@@ -88,6 +88,11 @@ Now you must create a `.env` file. You don't have to do that yourself, just run 
 
         python3 createEnvFile.py
 
+Then run the shell script to get selenium installed in your computer (even if you have google chrome, use "N" because you want to make sure it is compatible)
+
+        chmod +x getPreReq.sh
+        ./getPreReq.sh
+
 Next step is to start the backend. There is just one main file that you need to run. From the root directory of the repo. Run the following commands to install the pre-requisities and run the backend
 
         pip install -r requirements.txt
