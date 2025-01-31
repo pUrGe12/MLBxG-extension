@@ -8,10 +8,10 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__))) # adding the root directory to path
 from prompts import extractionPrompt                        # Might have to change this if running locally
 
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 from pathlib import Path
 
-# load_dotenv(dotenv_path=Path(__file__).parent.parent.parent.parent / '.env')
+load_dotenv(dotenv_path=Path(__file__).parent.parent.parent.parent / '.env')
 
 API_KEY = str(os.getenv("API_KEY")).strip()
 genai.configure(api_key=API_KEY)

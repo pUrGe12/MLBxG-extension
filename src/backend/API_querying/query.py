@@ -349,6 +349,7 @@ try:
 			team_code_mapping[splitted_raw[ind+7].lower()] = int(splitted_raw[ind+2])				# Ensuring that we add the lowercased team names so that its easier to check in the future
 except IndexError:
 	pass
+print(team_code_mapping)
 
 player_code_mapping = {}						# We'll pass this directly to the LLM
 file_path = r"/home/purge/Desktop/MLBxG-extension/src/backend/API_querying/razzball.csv"					# using abs paths
@@ -374,7 +375,46 @@ You will be given the user's prompt. Your job is to extract one of the three thi
 
 If both the team's name and the player's name is present then give the player's name
 
-For example, 
+valid team names are:
+1. los angeles angels
+2. arizona diamondbacks
+3. baltimore orioles
+3. boston red sox
+4. chicago cubs
+5. cincinnati reds
+6. cleveland indians
+7. colorado rockies
+8. detroit tigers
+9. houston astros
+10. kansas city royals
+11. los angeles dodgers 
+12. washington nationals
+13. new york mets
+14. oakland athletics
+15. pittsburgh pirates
+16. san diego padres
+17. seattle mariners
+18. san francisco giants
+19. st. louis cardinals
+20. tampa bay rays
+21. texas rangers
+22. toronto blue jays
+23. minnesota twins
+24. philadelphia phillies
+25. atlanta braves
+26. chicago white sox
+27. miami marlins
+28. new york yankees
+29. milwaukee brewers
+30. american league all-stars
+31. national league all-stars
+
+If the user has not entered a valid team name, then ensure that you pick the best match and give that output. For example
+
+Prompt: "How is LA angles doing this season?"
+output: team: Los Angeles angles
+
+More examples, 
 Prompt: "Is ottavino playing this season?"
 output: player: ottavino
 
@@ -386,6 +426,7 @@ output:	player: Tommy Pham
 
 Prompt: "So, whats MLB gonna be like now? Whats the schedule?"
 output: schedule
+
 
 Ensure that you output in exactly in this format. Do not include any brackets of any kind or anything else in the output.
 '''
@@ -409,7 +450,8 @@ def figure_out_code(team_code_mapping, player_code_mapping, user_prompt):
 
 	API_KEY = str(os.getenv("API_KEY")).strip()
 
-	# print(API_KEY)
+	print(API_KEY)
+	print("figuring out code")
 
 	chrome_extension_id = str(os.getenv("chrome_extension_id")).strip()
 
@@ -443,6 +485,7 @@ def figure_out_code(team_code_mapping, player_code_mapping, user_prompt):
 		print(output)
 
 		try:
+			print('inside try')
 			if 'player' in output.split(':')[0].strip().lower():
 				# This means the user needs the player's information
 
@@ -454,6 +497,7 @@ def figure_out_code(team_code_mapping, player_code_mapping, user_prompt):
 									(name, code) for name, code in player_code_mapping.items() if player_name_normalised in name.lower()
 									))			# Still lowering the name just in case.
 
+				print('Near matched entry')
 				if matched_entry:
 					matched_name, matched_code = matched_entry 			# This will be a tuple and hence we must unpack this
 					print(matched_code)

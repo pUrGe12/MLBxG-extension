@@ -1,3 +1,12 @@
+import os
+import sys
+from pathlib import Path
+
+from dotenv import load_dotenv
+load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / '.env')
+
+chrome_extension_id = str(os.getenv("chrome_extension_id")).strip()
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
@@ -28,7 +37,7 @@ from API_querying.query import team_code_mapping, player_code_mapping
 
 # Imports for helpers
 from models.helper_models import check_buffer_needed, is_it_gen_stuff
-from models.helper_models import gen_talk
+from models.helper_models import gen_talk, check_statcast
 
 import numpy as np
 import pandas as pd
@@ -190,7 +199,7 @@ def calculate_speed_bat(video_path, min_confidence = 0.5, deblur_iterations = 30
 
     results = tracker.process_video(SOURCE_VIDEO_PATH)
 
-    return results
+    return results                  # This will be in ft/s according to the internal definitions of the functions
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #                                                                                       API endpoints
@@ -273,7 +282,7 @@ def process_input():
                 output = calculate_speed_ball(video_path)
                 return jsonify({"response": output}), 200
 
-            elif 'exitvelocity' in what_is_needed.strip().lower():
+            elif 'batswingspeed' in what_is_needed.strip().lower():
                 output = calculate_speed_bat(video_path)
                 return jsonify({"response": output}), 200
             else:

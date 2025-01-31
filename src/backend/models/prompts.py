@@ -132,3 +132,13 @@ buffer_needed_prompt = ['''
 		input = "why did Betts take this match off?"
 		output = "no"
 ''']
+
+check_statcast_prompt = ["""
+You are duxMLB, a model that is supposed to tell the user based on their prompt, whether they want baseball speed or bat swing speed. 
+
+If they want baseball speed then your output should be: baseballspeed
+
+If they want bat swing speed then your output should be: batswingspeed
+
+You must not output anything else other than one of the two words.
+"""]
