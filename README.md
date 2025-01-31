@@ -15,7 +15,7 @@
 
 ---
 
-Developing an extension that can read your screen and give you live data updates and tips on your favourite baseball games! (With permission). 
+Developing an extension that will help existing and potential baseball fans enjoy the game even more! It has a bunch of functionality, about which you can read below, or watch the following [YouTube video](LinkHere).
 
 > [!IMPORTANT]
 > What can you do with duxMLB?
