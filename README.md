@@ -84,11 +84,17 @@ I don't have a CWS developer account (cause I don't have 5 dollars), and hence I
 
 8. Now you have the extension added.
 
+Now you must create a `.env` file. You don't have to do that yourself, just run the python script and add the relevant values as and when it asks
+
+        python3 createEnvFile.py
+
 Next step is to start the backend. There is just one main file that you need to run. From the root directory of the repo. Run the following commands to install the pre-requisities and run the backend
 
         pip install -r requirements.txt
         sudo apt install ffmpeg -y
         cd src/backend/ && python3 main.py
+
+
 
 You can now start checking it out.
 

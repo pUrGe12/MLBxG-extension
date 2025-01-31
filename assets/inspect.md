@@ -339,3 +339,23 @@ This would be fun and I'll do it regardless of the competition (once my exams ar
 Since we are already detecting pitchers and catchers, we can do similar things for other players and then based on where they are standing, figure out what sort of game is being played. There was one more reason I coudn't implement this and that was because I had absolutely no idea what type of games exist!
 
 I could research a lot but to get a feel for what the user really wants from the gameplay (do they want just the name? or the reason? or maybe who discovered it?) I would have be a long time fan myself, which wasn't possible since I just started watching baseball! 
+
+
+---
+
+1. Read the README page over at GitHub to install the extension properly
+2. After installing all the prerequisites and creating the .env file, you can test the extension
+
+Testing the panel
+- Ask for a player's stats
+- Ask for a team's stats
+- Ask for the MLB schedule
+- Talk about any other baseball related things
+
+Testing the options page
+Head over to the options page as mentioned above. 
+
+- Enter your MLB statcast to get a prediction
+- Check out the guide for more details on how the project was implemented
+- Upload a classics match (make it small otherwise you'll have to wait for long!) directly in MP4 format and generate the pitch speeds
+- Type in the name for a match and generate the pitch speeds
