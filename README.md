@@ -93,13 +93,15 @@ Then run the shell script to get selenium installed in your computer (even if yo
         chmod +x getPreReq.sh
         ./getPreReq.sh
 
+> This is assuming you're on Linux
+
+If not then please head over to [this link](https://googlechromelabs.github.io/chrome-for-testing/) and download the same versions of chrome and chromedriver. (hehe)
+
 Next step is to start the backend. There is just one main file that you need to run. From the root directory of the repo. Run the following commands to install the pre-requisities and run the backend
 
         pip install -r requirements.txt
         sudo apt install ffmpeg -y
         cd src/backend/ && python3 main.py
-
-
 
 You can now start checking it out.
 
@@ -119,25 +121,3 @@ You can now start checking it out.
 - Check out the guide for more details on how the project was implemented
 - Upload a classics match (make it small otherwise you'll have to wait for long!) directly in MP4 format and generate the pitch speeds
 - Type in the name for a match and generate the pitch speeds
-
----
-
-# Work
-
-- [x] Make the baseball detection thing run in parallel (THIS IS THE FIRST THING, START WITH THIS)
-
-- [ ] In the second edition I am planning on annotating the video feed itself and displaying the entire video as an output. This will be much easier for the user to comprehend!
-- [ ] Figure out the sending and recieving of the buffer video
-- [ ] The novice users can enter a `mp4` video file that contains them practising their swings or pitches.
-- [x] See if we can incorporate the curve of the ball during the pitch... (this we did using parabolic trajectory calculations)
-- [ ] Write the readme for the math and the implementation of speed calculation precisely! Explain the use of scale factor precisely
-- [ ] Create a schedule parser
-- [ ] We'll probably have to switch from yolo to EfficientDet cause yolo is not google's.
-How do we compare swings? Will have to learn...
-
-# More things
-
-- [ ] Integrating velocity finder with panel.py
-- [ ] Creating a exit-velocity finder using bat-tracking
-- [ ] Update logic to handle different camera angles. (to some extent, the math works --> Incorporating the scale factor)
-- [x] Run statcast on the downloaded youtube video (at least the speed calculation works!)
